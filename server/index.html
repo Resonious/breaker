@@ -2,30 +2,21 @@
 <html>
     <head>
         <meta charset="UTF-8" />
-        <title>Gray Area</title>
+        <title>Breaker</title>
         <script src="phaser.js"></script>
         <script src="prelude.js"></script>
         <script src="game/src/player.js"></script>
-        <script src="game/src/collision.js"></script>
-        <script src="game/src/platform.js"></script>
-        <script src="game/src/level.js"></script>
-        <script src="game/src/levels/one.js"></script>
-        <script src="game/src/levels/two.js"></script>
-        <script src="game/src/levels/three.js"></script>
-        <script src="game/src/levels/four.js"></script>
-        <script src="game/src/levels/five.js"></script>
-        <script src="game/src/levels/thank-you.js"></script>
         <script src="game/src/game.js"></script>
     </head>
     <body>
     <script type="text/javascript">
 
-    var grayAreaCore;
+    var breakerCore;
 
     window.onload = function() {
         var game;
-        grayAreaCore = new GameCore(game);
-        game = new Phaser.Game(800, 500, Phaser.AUTO, '', grayAreaCore);
+        breakerCore = new GameCore(game);
+        game = new Phaser.Game(800, 600, Phaser.AUTO, '', breakerCore);
     };
 
     </script>
