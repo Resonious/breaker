@@ -3,6 +3,7 @@
   var Block;
   this.Block = Block = (function(superclass){
     var prototype = extend$((import$(Block, superclass).displayName = 'Block', Block), superclass).prototype, constructor = Block;
+    prototype.isBlock = true;
     function Block(game, core, key, x, y){
       var x$;
       Block.superclass.call(this, game, x, y, key);

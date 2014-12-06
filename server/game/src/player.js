@@ -81,6 +81,9 @@
       x$.gravity.y = 2000;
       x$.collideWorldBounds = true;
       x$.setSize(this.hitboxWidth, this.hitboxHeight);
+      this.punchSound = this.game.add.audio('punch-sound');
+      this.leftFist = game.add.sprite(0, 0);
+      this.rightFist = game.add.sprite(0, 0);
       y$ = this.animations;
       y$.add('idle', [0, 1, 2, 1], 4, true);
       y$.add('walk', [3, 4, 5, 6, 7, 8], 10, true);
@@ -95,8 +98,19 @@
       x$.makeParticles('smoke');
       x$.gravity = 10;
     };
+    prototype.updateFistPositions = function(){
+      var position;
+      position = this.body.position;
+      this.leftFist.x = position.x - 30;
+      this.leftFist.y = position.y;
+      this.rightFist.x = position.x + 30;
+      this.rightFist.y = position.y;
+      this.game.debug.body(this.leftFist);
+      this.game.debug.body(this.rightFist);
+    };
     prototype.update = function(){
       var delta, axis, grounded, targetSpeed, towardsTargetBy, x$, anim, this$ = this;
+      this.updateFistPositions();
       if (isNaN(
       this.body.velocity.x)) {
         this.body.velocity.x = 0;
@@ -151,6 +165,7 @@
         this.punch += 1;
         this.punchDelay = 0.1;
         this.punchTimer = 0.5;
+        this.punchSound.play('', 0, 1, false);
         x$ = this.smoke;
         x$.x = this.body.position.x + this.hitboxWidth / 2 - 25 * this.direction;
         x$.y = this.body.position.y + 35;

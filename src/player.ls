@@ -62,6 +62,11 @@ class @Player extends Phaser.Sprite
       ..collide-world-bounds = true
       ..set-size @hitbox-width, @hitbox-height
 
+    @punch-sound = @game.add.audio 'punch-sound'
+
+    @left-fist  = game.add.sprite 0 0
+    @right-fist = game.add.sprite 0 0
+
     @animations
       ..add 'idle' [0, 1, 2, 1]       4 true
       ..add 'walk' [3, 4, 5, 6, 7, 8] 10 true
@@ -76,7 +81,19 @@ class @Player extends Phaser.Sprite
       ..make-particles 'smoke'
       ..gravity = 10
 
+  update-fist-positions: !->
+    const position = @body.position
+    @left-fist.x = position.x - 30
+    @left-fist.y = position.y
+
+    @right-fist.x = position.x + 30
+    @right-fist.y = position.y
+
+    @game.debug.body @left-fist
+    @game.debug.body @right-fist
+
   update: !->
+    @update-fist-positions!
     @body.velocity.x = 0 if @body.velocity.x |> isNaN
 
     const delta = @game.time.physics-elapsed
@@ -133,6 +150,7 @@ class @Player extends Phaser.Sprite
       @punch-delay = 0.1
       @punch-timer = 0.5
 
+      @punch-sound.play '' 0 1 false
       @smoke
         ..x = @body.position.x + @hitbox-width / 2 - 25 * @direction
         ..y = @body.position.y + 35

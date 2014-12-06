@@ -1,4 +1,6 @@
 class @Block extends Phaser.Sprite
+  is-block: true
+
   (game, core, key, x, y) ->
     super game, x, y, key
 
