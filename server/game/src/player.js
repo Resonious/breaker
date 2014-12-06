@@ -49,7 +49,7 @@
       x$.bounce.y = 0.1;
       x$.bounce.x = 0.3;
       x$.gravity.y = 2000;
-      x$.collideWorldBounds = true;
+      x$.collideWorldBounds = false;
       x$.setSize(this.hitboxWidth, this.hitboxHeight);
       this.punchSound = this.game.add.audio('punch-sound');
       y$ = this.fist = game.add.sprite(0, 0);
@@ -146,35 +146,54 @@
         this.core.punch(this.fist);
       }
       this.punchDelay -= delta;
-      if (this.punchTimer > 0) {
-        this.rotation = 0;
-        anim = "punch" + (this.punch % 2 + 1);
-        if (this.animations.name !== anim) {
-          this.animations.play(anim);
-        }
-        this.punchTimer -= delta;
-      } else if (this.spinningTimer > 0) {
-        this.scale.x = this.direction;
-        this.animations.play('spinning');
-        this.rotation += -0.3 * this.direction;
-        this.spinningTimer -= delta;
-      } else {
-        this.rotation = 0;
-        if (axis !== 0) {
-          this.scale.x = -axis;
-          this.animations.play('walk');
+      if (!this.dying) {
+        if (this.punchTimer > 0) {
+          this.rotation = 0;
+          anim = "punch" + (this.punch % 2 + 1);
+          if (this.animations.name !== anim) {
+            this.animations.play(anim);
+          }
+          this.punchTimer -= delta;
+        } else if (this.spinningTimer > 0) {
+          this.scale.x = this.direction;
+          this.animations.play('spinning');
+          this.rotation += -0.3 * this.direction;
+          this.spinningTimer -= delta;
         } else {
-          this.animations.play('idle');
+          this.rotation = 0;
+          if (axis !== 0) {
+            this.scale.x = -axis;
+            this.animations.play('walk');
+          } else {
+            this.animations.play('idle');
+          }
         }
       }
+    };
+    prototype.spinning = function(){
+      return this.spinningTimer > 0;
     };
     prototype.onCollide = function(block){
       if (this.body.touching.up && this.grounded() && block.body.velocity.y > 100) {
-        return this.die();
+        if (!this.spinning()) {
+          return this.die();
+        }
       }
     };
     prototype.die = function(){
+      if (this.dying) {
+        return;
+      }
       console.log('WASTED');
+      this.body.velocity.y = 0;
+      this.body.gravity.y = 500;
+      this.dying = true;
+      this.core.bgm.stop();
+      this.core.deathSound.play('', 0, 2, false);
+      this.animations.stop();
+      this.game.time.events.add(5000, function(){
+        return this.state.start('Game');
+      }, this.game);
     };
     prototype.grounded = function(){
       return this.body.blocked.down || this.body.touching.down;

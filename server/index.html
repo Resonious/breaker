@@ -17,8 +17,9 @@
 
     window.onload = function() {
         var game;
-        breakerCore = new GameCore(game);
-        game = new Phaser.Game(800, 600, Phaser.AUTO, '', breakerCore, false, true);
+        game = new Phaser.Game(800, 600, Phaser.AUTO, '', null, false, true);
+        game.state.add('Game', GameCore);
+        game.state.start('Game');
     };
 
     </script>

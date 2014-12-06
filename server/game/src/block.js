@@ -64,6 +64,7 @@
       }
       this.dying = true;
       this.visible = false;
+      this.body.enable = false;
       x$ = this.emitter;
       x$.maxParticleSpeed.setTo(100, 500);
       x$.maxRotation *= 2;

@@ -28,6 +28,7 @@
     prototype.create = function(){
       (function(add, physics, world, camera){
         var x$, y$, map, z$, z1$, z2$, this$ = this;
+        this.deathSound = add.audio('dead-sound');
         x$ = this.bgm = add.audio('bgm');
         x$.play('', 0, 1, true);
         this.game.stage.backgroundColor = '#FFFFFF';
@@ -67,16 +68,20 @@
       });
     };
     prototype.update = function(){
-      var x$;
-      x$ = this.game.physics.arcade;
-      x$.collide(this.player, this.layer);
-      x$.collide(this.blocks, this.layer);
-      x$.collide(this.player, this.blocks, function(plr, blck){
-        if (blck.onCollide) {
-          blck.onCollide(plr);
-        }
-        return plr.onCollide(blck);
-      });
+      var x$, y$;
+      if (!this.player.dying) {
+        x$ = this.game.physics.arcade;
+        x$.collide(this.player, this.layer);
+        x$.collide(this.player, this.blocks, function(plr, blck){
+          if (blck.onCollide) {
+            blck.onCollide(plr);
+          }
+          return plr.onCollide(blck);
+        });
+      }
+      y$ = this.game.physics.arcade;
+      y$.collide(this.blocks, this.layer);
+      y$.collide(this.blocks, this.blocks);
     };
     prototype.render = function(){};
     return GameCore;

@@ -42,7 +42,7 @@ class @Player extends Phaser.Sprite
       ..bounce.y = 0.1
       ..bounce.x = 0.3
       ..gravity.y = 2000
-      ..collide-world-bounds = true
+      ..collide-world-bounds = false
       ..set-size @hitbox-width, @hitbox-height
 
     @punch-sound = @game.add.audio 'punch-sound'
@@ -146,35 +146,47 @@ class @Player extends Phaser.Sprite
     @punch-delay -= delta
 
     # ================ ANIMATION ================
-    if @punch-timer > 0
-      @rotation = 0
-      const anim = "punch#{@punch % 2 + 1}"
-      @animations.play anim unless @animations.name is anim
-      @punch-timer -= delta
+    unless @dying
+      if @punch-timer > 0
+        @rotation = 0
+        const anim = "punch#{@punch % 2 + 1}"
+        @animations.play anim unless @animations.name is anim
+        @punch-timer -= delta
 
-    else if @spinning-timer > 0
-      @scale.x = @direction
-      @animations.play 'spinning'
-      @rotation += -0.3 * @direction
-      @spinning-timer -= delta
+      else if @spinning-timer > 0
+        @scale.x = @direction
+        @animations.play 'spinning'
+        @rotation += -0.3 * @direction
+        @spinning-timer -= delta
 
-    else
-      @rotation = 0
-      unless axis is 0
-        @scale.x = -axis
-        @animations.play 'walk'
       else
-        @animations.play 'idle'
+        @rotation = 0
+        unless axis is 0
+          @scale.x = -axis
+          @animations.play 'walk'
+        else
+          @animations.play 'idle'
 
-    # = DEBUG =
-    # if @keys.down.is-down
-      # @rotation += 0.1
+      # = DEBUG =
+      # if @keys.down.is-down
+        # @rotation += 0.1
+
+  spinning: -> @spinning-timer > 0
 
   on-collide: (block) ->
     if @body.touching.up && @grounded! && block.body.velocity.y > 100
-      @die!
+      @die! unless @spinning!
 
   die: !->
+    return if @dying
     console.log 'WASTED'
+    @body.velocity.y = 0
+    @body.gravity.y = 500
+    @dying = true
+    @core.bgm.stop!
+    @core.death-sound.play '' 0 2 false
+    @animations.stop!
+
+    @game.time.events.add 5000, (-> @state.start 'Game'), @game
 
   grounded: -> @body.blocked.down or @body.touching.down

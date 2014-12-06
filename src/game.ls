@@ -26,6 +26,7 @@ class @GameCore
          world   = @game.world
          camera  = @game.camera)
 
+      @death-sound = add.audio 'dead-sound'
       @bgm = add.audio 'bgm'
         ..play '' 0 1 true
 
@@ -66,12 +67,16 @@ class @GameCore
         false
 
   update: !->
+    unless @player.dying
+      @game.physics.arcade
+        ..collide @player, @layer
+        ..collide @player, @blocks, (plr, blck) ->
+          blck.on-collide(plr) if blck.on-collide
+          plr.on-collide(blck)
+
     @game.physics.arcade
-      ..collide @player, @layer
       ..collide @blocks, @layer
-      ..collide @player, @blocks, (plr, blck) ->
-        blck.on-collide(plr) if blck.on-collide
-        plr.on-collide(blck)
+      ..collide @blocks, @blocks
 
   render: !->
     # @player.debug-fist-positions!

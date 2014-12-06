@@ -46,8 +46,9 @@ class @BasicBlock extends Block
 
   dead: ->
     return if @dying
-    @dying = true
-    @visible = false
+    @dying       = true
+    @visible     = false
+    @body.enable = false
     @emitter
       ..max-particle-speed.set-to 100 500
       ..max-rotation *= 2
