@@ -17,6 +17,8 @@
       x$.spritesheet('breaker', asset('breaker.png'), 64, 64);
       x$.image('basic-tile', asset('better-basic-tile.png'));
       x$.tilemap('map', asset('map/basic-map.json'), null, Phaser.Tilemap.TILED_JSON);
+      x$.image('smoke', asset('smoke-cloud.png'));
+      x$.spritesheet('basic-block', asset('blocks/basic.png'), 64, 64);
     };
     prototype.create = function(){
       (function(add, physics, world, camera){
@@ -30,12 +32,23 @@
         y$ = this.layer = map.createLayer('Tile Layer 1');
         y$.resizeWorld();
         this.arrowKeys = this.game.input.keyboard.createCursorKeys();
+        this.punchKey = this.game.input.keyboard.addKey(Phaser.Keyboard.Z);
         z$ = this.player = add.existing(new Player(this.game, this, 400, 500));
         z$.keys = this.arrowKeys;
+        z$.punchKey = this.punchKey;
+        z$.initializeSmoke();
+        this.blocks = add.group();
       }.call(this, this.game.add, this.game.physics, this.game.world, this.game.camera));
     };
     prototype.update = function(){
-      this.game.physics.arcade.collide(this.player, this.layer);
+      var x$;
+      x$ = this.game.physics.arcade;
+      x$.collide(this.player, this.layer);
+      x$.collide(this.player, this.blocks, function(plr, blck){
+        if (blck.onCollide) {
+          return blck.onCollide(plr);
+        }
+      });
     };
     return GameCore;
   }());

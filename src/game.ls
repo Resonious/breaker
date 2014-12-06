@@ -10,6 +10,9 @@ class @GameCore
       ..spritesheet 'breaker'    (asset 'breaker.png'), 64 64
       ..image       'basic-tile' asset 'better-basic-tile.png'
       ..tilemap     'map',       (asset 'map/basic-map.json'), null, Phaser.Tilemap.TILED_JSON
+      ..image       'smoke'      asset 'smoke-cloud.png'
+
+      ..spritesheet 'basic-block' (asset 'blocks/basic.png'), 64 64
 
   create: !->
     let (add     = @game.add,
@@ -29,12 +32,19 @@ class @GameCore
          ..resize-world!
 
       @arrow-keys = @game.input.keyboard.create-cursor-keys!
+      @punch-key = @game.input.keyboard.add-key Phaser.Keyboard.Z
 
       @player = add.existing new Player(@game, this, 400, 500)
-        ..keys = @arrow-keys
+        ..keys      = @arrow-keys
+        ..punch-key = @punch-key
+        ..initialize-smoke!
+
+      @blocks = add.group!
 
   update: !->
-    @game.physics.arcade.collide @player, @layer
+    @game.physics.arcade
+      ..collide @player, @layer
+      ..collide @player, @blocks, (plr, blck) -> blck.on-collide(plr) if blck.on-collide
 
   # render: !->
     # @game.debug.body @player

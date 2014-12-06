@@ -47,6 +47,7 @@
   this.Player = Player = (function(superclass){
     var prototype = extend$((import$(Player, superclass).displayName = 'Player', Player), superclass).prototype, constructor = Player;
     prototype.keys = null;
+    prototype.punchKey = null;
     prototype.direction = 0;
     prototype.airTimer = 0.0;
     prototype.jumpWhileOffGroundTime = 0.1;
@@ -62,7 +63,12 @@
       left: 0,
       right: 0
     };
+    prototype.punch = 0;
+    prototype.punchTimer = 0;
+    prototype.punchDelay = 0;
     prototype.spinningTimer = 0.0;
+    prototype.hitboxWidth = 36;
+    prototype.hitboxHeight = 49;
     function Player(game, core, x, y){
       var x$, y$;
       Player.superclass.call(this, game, x, y, 'breaker');
@@ -74,14 +80,23 @@
       x$.bounce.x = 0.3;
       x$.gravity.y = 2000;
       x$.collideWorldBounds = true;
-      x$.setSize(36, 49);
+      x$.setSize(this.hitboxWidth, this.hitboxHeight);
       y$ = this.animations;
       y$.add('idle', [0, 1, 2, 1], 4, true);
       y$.add('walk', [3, 4, 5, 6, 7, 8], 10, true);
+      y$.add('spinning', [11], 0, false);
+      y$.add('punch1', [11, 9], 25, false);
+      y$.add('punch2', [11, 10], 25, false);
       y$.play('idle');
     }
+    prototype.initializeSmoke = function(){
+      var x$;
+      x$ = this.smoke = this.game.add.emitter(0, 0, 25);
+      x$.makeParticles('smoke');
+      x$.gravity = 10;
+    };
     prototype.update = function(){
-      var delta, axis, grounded, targetSpeed, towardsTargetBy, this$ = this;
+      var delta, axis, grounded, targetSpeed, towardsTargetBy, x$, anim, this$ = this;
       if (isNaN(
       this.body.velocity.x)) {
         this.body.velocity.x = 0;
@@ -119,7 +134,7 @@
         }
       })(
       ['left', 'right']);
-      targetSpeed = 250 * axis;
+      targetSpeed = this.punchDelay <= 0 ? 250 * axis : 0;
       towardsTargetBy = towards(this.body.velocity.x, targetSpeed);
       this.body.velocity.x = towardsTargetBy(3000 * delta);
       if (this.keys.up.isDown) {
@@ -129,7 +144,27 @@
           this.body.velocity.y -= this.jumpForce * this.jumpBoostFactor;
         }
       }
-      if (this.spinningTimer > 0) {
+      if (axis !== 0) {
+        this.punchTimer = 0;
+      }
+      if (this.punchKey.downDuration(10) && this.punchDelay <= 0) {
+        this.punch += 1;
+        this.punchDelay = 0.1;
+        this.punchTimer = 0.5;
+        x$ = this.smoke;
+        x$.x = this.body.position.x + this.hitboxWidth / 2 - 25 * this.direction;
+        x$.y = this.body.position.y + 35;
+        x$.start(true, 100, null, 5);
+        this.body.velocity.x += 100 * -this.direction;
+      }
+      this.punchDelay -= delta;
+      if (this.punchTimer > 0) {
+        anim = "punch" + (this.punch % 2 + 1);
+        if (this.animations.name !== anim) {
+          this.animations.play(anim);
+        }
+        this.punchTimer -= delta;
+      } else if (this.spinningTimer > 0) {
         this.scale.x = this.direction;
         this.animations.play('spinning');
         this.rotation += -0.3 * this.direction;
