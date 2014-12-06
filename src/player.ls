@@ -37,13 +37,13 @@ class @Player extends Phaser.Sprite
 
     @core = core
     game.physics.arcade.enable this
-    @anchor.set-to 31 / 64, 43 / 64
+    @anchor.set-to 31 / 64, 42 / 64
     @body
       ..bounce.y = 0.1
       ..bounce.x = 0.3
       ..gravity.y = 2000
       ..collide-world-bounds = true
-      ..set-size 36 40
+      ..set-size 36 49
 
     @animations
       ..add 'idle' [0, 1, 2, 1]       4 true
@@ -83,5 +83,9 @@ class @Player extends Phaser.Sprite
       @animations.play 'walk'
     else
       @animations.play 'idle'
+
+    # = DEBUG =
+    # if @keys.down.is-down
+      # @rotation += 0.1
 
   grounded: -> @body.blocked.down or @body.touching.down

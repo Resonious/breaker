@@ -28,6 +28,9 @@
         x$.keys = this.arrowKeys;
       }.call(this, this.game.add, this.game.physics, this.game.world, this.game.camera));
     };
+    prototype.render = function(){
+      this.game.debug.body(this.player);
+    };
     return GameCore;
   }());
 }).call(this);

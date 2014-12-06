@@ -25,3 +25,6 @@ class @GameCore
 
       @player = add.existing new Player(@game, this, 100, 100)
         ..keys = @arrow-keys
+
+  render: !->
+    @game.debug.body @player

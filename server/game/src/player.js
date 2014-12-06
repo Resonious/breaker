@@ -57,13 +57,13 @@
       Player.superclass.call(this, game, x, y, 'breaker');
       this.core = core;
       game.physics.arcade.enable(this);
-      this.anchor.setTo(31 / 64, 43 / 64);
+      this.anchor.setTo(31 / 64, 42 / 64);
       x$ = this.body;
       x$.bounce.y = 0.1;
       x$.bounce.x = 0.3;
       x$.gravity.y = 2000;
       x$.collideWorldBounds = true;
-      x$.setSize(36, 40);
+      x$.setSize(36, 49);
       y$ = this.animations;
       y$.add('idle', [0, 1, 2, 1], 4, true);
       y$.add('walk', [3, 4, 5, 6, 7, 8], 10, true);
