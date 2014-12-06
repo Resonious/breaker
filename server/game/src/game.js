@@ -14,22 +14,28 @@
         return "game/assets/" + p;
       };
       x$ = this.game.load;
-      x$.spritesheet('basic-tile', asset('better-basic-tile.png'), 32, 32);
       x$.spritesheet('breaker', asset('breaker.png'), 64, 64);
+      x$.image('basic-tile', asset('better-basic-tile.png'));
+      x$.tilemap('map', asset('map/basic-map.json'), null, Phaser.Tilemap.TILED_JSON);
     };
     prototype.create = function(){
       (function(add, physics, world, camera){
-        var x$;
+        var x$, map, y$, z$;
         this.game.stage.backgroundColor = '#FFFFFF';
         this.game.time.advancedTiming = true;
         physics.startSystem(Phaser.Physics.Arcade);
+        x$ = map = add.tilemap('map');
+        x$.addTilesetImage('basic', 'basic-tile');
+        x$.setCollision(1);
+        y$ = this.layer = map.createLayer('Tile Layer 1');
+        y$.resizeWorld();
         this.arrowKeys = this.game.input.keyboard.createCursorKeys();
-        x$ = this.player = add.existing(new Player(this.game, this, 100, 100));
-        x$.keys = this.arrowKeys;
+        z$ = this.player = add.existing(new Player(this.game, this, 400, 500));
+        z$.keys = this.arrowKeys;
       }.call(this, this.game.add, this.game.physics, this.game.world, this.game.camera));
     };
-    prototype.render = function(){
-      this.game.debug.body(this.player);
+    prototype.update = function(){
+      this.game.physics.arcade.collide(this.player, this.layer);
     };
     return GameCore;
   }());

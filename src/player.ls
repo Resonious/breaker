@@ -1,3 +1,5 @@
+{each, all, map} = require 'prelude-ls'
+
 left-right-axis = (l, r) --> match l, r
   | true, false => -1
   | false, true =>  1
@@ -25,12 +27,19 @@ class @Player extends Phaser.Sprite
   # Assigned by Game
   keys: null
 
+  direction: 0
+
   air-timer: 0.0
   jump-while-off-ground-time: 0.1
   jump-boost-factor: 0.01
   jump-boost-time: 0.1
   jump-force: 500
   jumped: false
+
+  double-click-timer: { left: 0, right: 0 }
+  double-click-counter: { left: 0, right: 0 }
+
+  spinning-timer: 0.0
 
   (game, core, x, y) ->
     super game, x, y, 'breaker'
@@ -56,6 +65,7 @@ class @Player extends Phaser.Sprite
     delta = @game.time.physics-elapsed
     return if @keys is null
     axis  = left-right-axis @keys.left.is-down, @keys.right.is-down
+    @direction = -axis if axis isnt 0
 
     # =========== AIR TIMING AND GROUND MANAGEMENT ===
     grounded = @grounded!
@@ -63,6 +73,26 @@ class @Player extends Phaser.Sprite
       @air-timer = 0
     else
       @air-timer += delta
+
+    # =============== DODGE ROLL ===============
+    @double-click-timer.left  -= delta
+    @double-click-timer.right -= delta
+
+    ['left', 'right'] |> each ~>
+      # Reset counter to 0 if time for doubleclick has run out
+      if @double-click-timer[it] < 0
+        @double-click-counter[it] = 0
+
+      const key = @keys[it]
+
+      if key.down-duration(10)
+        @double-click-counter[it] += 1
+        @double-click-timer[it]   = 0.25
+
+        if @double-click-counter[it] == 2
+          @body.velocity.x = 1200 * axis
+          @double-click-counter[it] = 0
+          @spinning-timer = 0.3
 
     # ================ MOVEMENT ================
     const target-speed = 250 * axis
@@ -78,11 +108,18 @@ class @Player extends Phaser.Sprite
         @body.velocity.y -= @jump-force * @jump-boost-factor
 
     # ================ ANIMATION ================
-    unless axis is 0
-      @scale.x = -axis
-      @animations.play 'walk'
+    if @spinning-timer > 0
+      @scale.x = @direction
+      @animations.play 'spinning'
+      @rotation += -0.3 * @direction
+      @spinning-timer -= delta
     else
-      @animations.play 'idle'
+      @rotation = 0
+      unless axis is 0
+        @scale.x = -axis
+        @animations.play 'walk'
+      else
+        @animations.play 'idle'
 
     # = DEBUG =
     # if @keys.down.is-down
