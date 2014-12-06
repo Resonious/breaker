@@ -12,6 +12,9 @@ class @GameCore
       ..tilemap     'map',        (asset 'map/basic-map.json'), null, Phaser.Tilemap.TILED_JSON
       ..image       'smoke'       asset 'smoke-cloud.png'
       ..audio       'punch-sound' asset 'sounds/punch.wav'
+      ..audio       'dead-sound'  asset 'sounds/dead.ogg'
+      ..audio       'box-hit'     asset 'sounds/box-hit.wav'
+      ..audio       'box-break'   asset 'sounds/box-break.wav'
 
       ..audio 'bgm' asset 'bgm.ogg'
 
@@ -30,6 +33,8 @@ class @GameCore
       @game.time.advancedTiming    = true
 
       physics.start-system Phaser.Physics.Arcade
+      physics.arcade.TILE_BIAS = 32
+      physics.arcade.OVERLAP_BIAS = 12
 
       map = add.tilemap 'map'
         ..add-tileset-image 'basic', 'basic-tile'
@@ -57,14 +62,16 @@ class @GameCore
   punch: (fist) !->
     @game.physics.arcade
       ..collide fist, @blocks, null, (_, block) ->
-        console.log 'BAM'
+        block.punched(fist) if block.punched
         false
 
   update: !->
     @game.physics.arcade
       ..collide @player, @layer
       ..collide @blocks, @layer
-      ..collide @player, @blocks, (plr, blck) -> blck.on-collide(plr) if blck.on-collide
+      ..collide @player, @blocks, (plr, blck) ->
+        blck.on-collide(plr) if blck.on-collide
+        plr.on-collide(blck)
 
   render: !->
     # @player.debug-fist-positions!

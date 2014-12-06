@@ -19,6 +19,9 @@
       x$.tilemap('map', asset('map/basic-map.json'), null, Phaser.Tilemap.TILED_JSON);
       x$.image('smoke', asset('smoke-cloud.png'));
       x$.audio('punch-sound', asset('sounds/punch.wav'));
+      x$.audio('dead-sound', asset('sounds/dead.ogg'));
+      x$.audio('box-hit', asset('sounds/box-hit.wav'));
+      x$.audio('box-break', asset('sounds/box-break.wav'));
       x$.audio('bgm', asset('bgm.ogg'));
       x$.spritesheet('basic-block', asset('blocks/basic.png'), 64, 64);
     };
@@ -30,6 +33,8 @@
         this.game.stage.backgroundColor = '#FFFFFF';
         this.game.time.advancedTiming = true;
         physics.startSystem(Phaser.Physics.Arcade);
+        physics.arcade.TILE_BIAS = 32;
+        physics.arcade.OVERLAP_BIAS = 12;
         y$ = map = add.tilemap('map');
         y$.addTilesetImage('basic', 'basic-tile');
         y$.setCollision(1);
@@ -55,7 +60,9 @@
       var x$;
       x$ = this.game.physics.arcade;
       x$.collide(fist, this.blocks, null, function(_, block){
-        console.log('BAM');
+        if (block.punched) {
+          block.punched(fist);
+        }
         return false;
       });
     };
@@ -66,8 +73,9 @@
       x$.collide(this.blocks, this.layer);
       x$.collide(this.player, this.blocks, function(plr, blck){
         if (blck.onCollide) {
-          return blck.onCollide(plr);
+          blck.onCollide(plr);
         }
+        return plr.onCollide(blck);
       });
     };
     prototype.render = function(){};

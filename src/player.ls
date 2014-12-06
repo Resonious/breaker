@@ -5,24 +5,6 @@ left-right-axis = (l, r) --> match l, r
   | false, true =>  1
   | otherwise   =>  0
 
-towards = (current, target, amount) -->
-  | current is target => return current
-  | otherwise =>
-    increment = null
-    passed    = null
-    if current > target
-      increment = (- amount)
-      passed    = (<)
-    else
-      increment = (+ amount)
-      passed    = (>)
-
-    result = increment current
-    if result `passed` target
-      target
-    else
-      result
-
 class @Player extends Phaser.Sprite
   # Assigned by Game
   keys: null
@@ -65,7 +47,8 @@ class @Player extends Phaser.Sprite
 
     @punch-sound = @game.add.audio 'punch-sound'
 
-    @fist  = game.add.sprite 0 0
+    @fist = game.add.sprite 0 0
+      ..player = this
     game.physics.arcade.enable @fist
     @fist.body.set-size @fist-size, @fist-size
 
@@ -186,5 +169,12 @@ class @Player extends Phaser.Sprite
     # = DEBUG =
     # if @keys.down.is-down
       # @rotation += 0.1
+
+  on-collide: (block) ->
+    if @body.touching.up && @grounded! && block.body.velocity.y > 100
+      @die!
+
+  die: !->
+    console.log 'WASTED'
 
   grounded: -> @body.blocked.down or @body.touching.down
