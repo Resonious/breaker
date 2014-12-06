@@ -69,6 +69,7 @@
     prototype.spinningTimer = 0.0;
     prototype.hitboxWidth = 36;
     prototype.hitboxHeight = 49;
+    prototype.fistSize = 16;
     function Player(game, core, x, y){
       var x$, y$;
       Player.superclass.call(this, game, x, y, 'breaker');
@@ -82,13 +83,9 @@
       x$.collideWorldBounds = true;
       x$.setSize(this.hitboxWidth, this.hitboxHeight);
       this.punchSound = this.game.add.audio('punch-sound');
-      this.leftFist = game.add.sprite(0, 0);
-      this.rightFist = game.add.sprite(0, 0);
-      each(function(it){
-        game.physics.arcade.enable(it);
-        return it.body.setSize(16, 16);
-      })(
-      [this.leftFist, this.rightFist]);
+      this.fist = game.add.sprite(0, 0);
+      game.physics.arcade.enable(this.fist);
+      this.fist.body.setSize(this.fistSize, this.fistSize);
       y$ = this.animations;
       y$.add('idle', [0, 1, 2, 1], 4, true);
       y$.add('walk', [3, 4, 5, 6, 7, 8], 10, true);
@@ -104,16 +101,14 @@
       x$.gravity = 10;
     };
     prototype.updateFistPositions = function(){
-      var position;
+      var position, offset;
       position = this.body.position;
-      this.leftFist.x = position.x - 30;
-      this.leftFist.y = position.y;
-      this.rightFist.x = position.x + 30;
-      this.rightFist.y = position.y;
+      offset = this.hitboxWidth / 2 - this.fistSize / 2;
+      this.fist.body.x = position.x + offset - 23 * this.direction;
+      this.fist.body.y = position.y + 23;
     };
     prototype.debugFistPositions = function(){
-      this.game.debug.body(this.leftFist);
-      this.game.debug.body(this.rightFist);
+      this.game.debug.body(this.fist);
     };
     prototype.update = function(){
       var delta, axis, grounded, targetSpeed, towardsTargetBy, x$, anim, this$ = this;
@@ -178,6 +173,7 @@
         x$.y = this.body.position.y + 35;
         x$.start(true, 100, null, 5);
         this.body.velocity.x += 100 * -this.direction;
+        this.core.punch(this.fist);
       }
       this.punchDelay -= delta;
       if (this.punchTimer > 0) {

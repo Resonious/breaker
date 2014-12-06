@@ -24,7 +24,7 @@
     };
     prototype.create = function(){
       (function(add, physics, world, camera){
-        var x$, y$, map, z$, z1$;
+        var x$, y$, map, z$, z1$, z2$, this$ = this;
         x$ = this.bgm = add.audio('bgm');
         x$.play('', 0, 1, true);
         this.game.stage.backgroundColor = '#FFFFFF';
@@ -42,21 +42,35 @@
         z1$.punchKey = this.punchKey;
         z1$.initializeSmoke();
         this.blocks = add.group();
+        z2$ = this.game.input.keyboard.addKey(Phaser.Keyboard.D);
+        z2$.onDown.add(function(){
+          return this$.addBlock(BasicBlock, 300, 0);
+        });
       }.call(this, this.game.add, this.game.physics, this.game.world, this.game.camera));
+    };
+    prototype.addBlock = function(type, x, y){
+      return this.blocks.add(type(this.game, this, x, y));
+    };
+    prototype.punch = function(fist){
+      var x$;
+      x$ = this.game.physics.arcade;
+      x$.collide(fist, this.blocks, null, function(_, block){
+        console.log('BAM');
+        return false;
+      });
     };
     prototype.update = function(){
       var x$;
       x$ = this.game.physics.arcade;
       x$.collide(this.player, this.layer);
+      x$.collide(this.blocks, this.layer);
       x$.collide(this.player, this.blocks, function(plr, blck){
         if (blck.onCollide) {
           return blck.onCollide(plr);
         }
       });
     };
-    prototype.render = function(){
-      this.player.debugFistPositions();
-    };
+    prototype.render = function(){};
     return GameCore;
   }());
 }).call(this);

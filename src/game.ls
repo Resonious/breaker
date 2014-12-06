@@ -47,11 +47,25 @@ class @GameCore
 
       @blocks = add.group!
 
+      # DEBUG KEY BEHAVIOR
+      @game.input.keyboard.add-key Phaser.Keyboard.D
+        ..on-down.add ~> @add-block(BasicBlock, 300, 0)
+
+  add-block: (type, x, y) ->
+    @blocks.add type(@game, this, x, y)
+
+  punch: (fist) !->
+    @game.physics.arcade
+      ..collide fist, @blocks, null, (_, block) ->
+        console.log 'BAM'
+        false
+
   update: !->
     @game.physics.arcade
       ..collide @player, @layer
+      ..collide @blocks, @layer
       ..collide @player, @blocks, (plr, blck) -> blck.on-collide(plr) if blck.on-collide
 
   render: !->
-    @player.debug-fist-positions!
+    # @player.debug-fist-positions!
     # @game.debug.body @player

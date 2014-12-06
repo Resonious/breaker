@@ -48,6 +48,7 @@ class @Player extends Phaser.Sprite
 
   hitbox-width: 36
   hitbox-height: 49
+  fist-size: 16
 
   (game, core, x, y) ->
     super game, x, y, 'breaker'
@@ -64,11 +65,9 @@ class @Player extends Phaser.Sprite
 
     @punch-sound = @game.add.audio 'punch-sound'
 
-    @left-fist  = game.add.sprite 0 0
-    @right-fist = game.add.sprite 0 0
-    [@left-fist, @right-fist] |> each ->
-      game.physics.arcade.enable it
-      it.body.set-size 16 16
+    @fist  = game.add.sprite 0 0
+    game.physics.arcade.enable @fist
+    @fist.body.set-size @fist-size, @fist-size
 
     @animations
       ..add 'idle' [0, 1, 2, 1]       4 true
@@ -86,15 +85,13 @@ class @Player extends Phaser.Sprite
 
   update-fist-positions: !->
     const position = @body.position
-    @left-fist.x = position.x - 30
-    @left-fist.y = position.y
+    const offset   = (@hitbox-width / 2) - (@fist-size / 2)
 
-    @right-fist.x = position.x + 30
-    @right-fist.y = position.y
+    @fist.body.x = position.x + offset - 23 * @direction
+    @fist.body.y = position.y + 23
 
   debug-fist-positions: !->
-    @game.debug.body @left-fist
-    @game.debug.body @right-fist
+    @game.debug.body @fist
 
   update: !->
     @update-fist-positions!
@@ -102,7 +99,7 @@ class @Player extends Phaser.Sprite
 
     const delta = @game.time.physics-elapsed
     return if @keys is null
-    axis  = left-right-axis @keys.left.is-down, @keys.right.is-down
+    axis = left-right-axis @keys.left.is-down, @keys.right.is-down
     @direction = -axis if axis isnt 0
 
     # =========== AIR TIMING AND GROUND MANAGEMENT ===
@@ -161,6 +158,7 @@ class @Player extends Phaser.Sprite
         ..start true, 100, null, 5
 
       @body.velocity.x += 100 * -@direction
+      @core.punch @fist
 
     @punch-delay -= delta
 

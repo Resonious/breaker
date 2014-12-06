@@ -1,8 +1,9 @@
 class @Block extends Phaser.Sprite
   is-block: true
 
-  (game, core, key, x, y) ->
-    super game, x, y, key
+  (spritesheet, game, core, x, y) ~>
+    console.log "sprite sheet is #spritesheet"
+    super game, x, y, spritesheet
 
     @core = core
     game.physics.arcade.enable this
@@ -13,4 +14,7 @@ class @Block extends Phaser.Sprite
       ..gravity.y = 2000
       ..collide-world-bounds = false
 
-  update: !->
+    @initialize! if @initialize
+
+class @BasicBlock extends Block
+  (...args) ~> super 'basic-block', ...args
