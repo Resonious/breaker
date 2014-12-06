@@ -52,5 +52,6 @@ class @GameCore
       ..collide @player, @layer
       ..collide @player, @blocks, (plr, blck) -> blck.on-collide(plr) if blck.on-collide
 
-  # render: !->
+  render: !->
+    @player.debug-fist-positions!
     # @game.debug.body @player

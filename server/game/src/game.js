@@ -54,6 +54,9 @@
         }
       });
     };
+    prototype.render = function(){
+      this.player.debugFistPositions();
+    };
     return GameCore;
   }());
 }).call(this);

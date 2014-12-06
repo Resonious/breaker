@@ -84,6 +84,11 @@
       this.punchSound = this.game.add.audio('punch-sound');
       this.leftFist = game.add.sprite(0, 0);
       this.rightFist = game.add.sprite(0, 0);
+      each(function(it){
+        game.physics.arcade.enable(it);
+        return it.body.setSize(16, 16);
+      })(
+      [this.leftFist, this.rightFist]);
       y$ = this.animations;
       y$.add('idle', [0, 1, 2, 1], 4, true);
       y$.add('walk', [3, 4, 5, 6, 7, 8], 10, true);
@@ -105,6 +110,8 @@
       this.leftFist.y = position.y;
       this.rightFist.x = position.x + 30;
       this.rightFist.y = position.y;
+    };
+    prototype.debugFistPositions = function(){
       this.game.debug.body(this.leftFist);
       this.game.debug.body(this.rightFist);
     };
@@ -174,6 +181,7 @@
       }
       this.punchDelay -= delta;
       if (this.punchTimer > 0) {
+        this.rotation = 0;
         anim = "punch" + (this.punch % 2 + 1);
         if (this.animations.name !== anim) {
           this.animations.play(anim);

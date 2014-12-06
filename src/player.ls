@@ -66,6 +66,9 @@ class @Player extends Phaser.Sprite
 
     @left-fist  = game.add.sprite 0 0
     @right-fist = game.add.sprite 0 0
+    [@left-fist, @right-fist] |> each ->
+      game.physics.arcade.enable it
+      it.body.set-size 16 16
 
     @animations
       ..add 'idle' [0, 1, 2, 1]       4 true
@@ -89,6 +92,7 @@ class @Player extends Phaser.Sprite
     @right-fist.x = position.x + 30
     @right-fist.y = position.y
 
+  debug-fist-positions: !->
     @game.debug.body @left-fist
     @game.debug.body @right-fist
 
@@ -162,6 +166,7 @@ class @Player extends Phaser.Sprite
 
     # ================ ANIMATION ================
     if @punch-timer > 0
+      @rotation = 0
       const anim = "punch#{@punch % 2 + 1}"
       @animations.play anim unless @animations.name is anim
       @punch-timer -= delta
