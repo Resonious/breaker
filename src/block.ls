@@ -79,3 +79,16 @@ class @BasicBlock extends Block
     @hit-sound   = @game.add.audio 'box-hit'
     @break-sound = @game.add.audio 'box-break'
     @emitter     = @death-emitter [3, 4, 5]
+
+class @SteelBlock extends Block
+  @reroll-chance = 90
+
+  damage-frames: 22
+  score-worth: 25
+  play-hit-sound-on-death: true
+
+  (...args) ~>
+    super 'steel-block', ...args
+    @hit-sound   = @game.add.audio 'steel-hit'
+    @break-sound = @game.add.audio 'steel-break'
+    @emitter     = @death-emitter [3, 4, 5]

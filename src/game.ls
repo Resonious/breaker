@@ -27,6 +27,8 @@ class @GameCore
       ..audio       'charge-up'   asset 'sounds/charge-up.wav'
       ..audio       'charge-down' asset 'sounds/charge-down.wav'
       ..audio       'blast-off'   asset 'sounds/blast-off.wav'
+      ..audio       'steel-hit'   asset 'sounds/steel-hit.wav'
+      ..audio       'steel-break' asset 'sounds/steel-break.wav'
 
       ..audio 'bgm' asset 'bgm.ogg'
 
