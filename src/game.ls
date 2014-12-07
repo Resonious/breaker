@@ -21,6 +21,7 @@ class @GameCore
       ..audio 'bgm' asset 'bgm.ogg'
 
       ..spritesheet 'basic-block' (asset 'blocks/basic.png'), 64 64
+      ..spritesheet 'bullet-block' (asset 'blocks/bullet.png'), 64 64
 
   create: !->
     let (add     = @game.add,
@@ -85,17 +86,21 @@ class @GameCore
           plr.on-collide(blck)
 
     @game.physics.arcade
-      ..collide @blocks, @layer
-      ..collide @blocks, @blocks
+      ..collide @blocks, @layer, null, (b, l) -> b.is-block
+      ..collide @blocks, @blocks, (b1, b2) ->
+        b1.on-block-collide(b2) if b1.on-block-collide
+        b2.on-block-collide(b1) if b2.on-block-collide
 
     const delta = @game.time.physics-elapsed
     const rnd   = @game.rnd
     @block-timer -= delta
 
     if @block-timer <= 0
-      const next-block-x = rnd.integer-in-range 32 800 - 32
-      # TODO random block type (when we have more of those!)
-      @add-block BasicBlock, next-block-x, 0
+      const possible-blocks = [BasicBlock, BulletBlock]
+      const block-index     = rnd.integer-in-range 0 possible-blocks.length - 1
+      const next-block-x    = rnd.integer-in-range 32 800 - 32
+
+      @add-block possible-blocks[block-index], next-block-x, 0
       # TODO function for more interesting block intervals
       @block-timer = 1
 

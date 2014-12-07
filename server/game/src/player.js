@@ -181,10 +181,15 @@
       return this.spinningTimer > 0;
     };
     prototype.onCollide = function(block){
-      if (this.body.touching.up && this.grounded() && block.body.velocity.y > 100) {
-        if (!this.spinning()) {
-          return this.die();
+      var left, right;
+      if (this.spinning()) {
+        left = this.body.touching.left && block.body.touching.right;
+        right = this.body.touching.right && block.body.touching.left;
+        if (left || right) {
+          return block.punched(this.fist);
         }
+      } else if (this.body.touching.up && this.grounded() && block.body.velocity.y > 100) {
+        return this.die();
       }
     };
     prototype.die = function(){

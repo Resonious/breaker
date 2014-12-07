@@ -181,8 +181,13 @@ class @Player extends Phaser.Sprite
   spinning: -> @spinning-timer > 0
 
   on-collide: (block) ->
-    if @body.touching.up && @grounded! && block.body.velocity.y > 100
-      @die! unless @spinning!
+    if @spinning!
+      # TODO this is kind of overpowered (maybe)
+      const left  = @body.touching.left  && block.body.touching.right
+      const right = @body.touching.right && block.body.touching.left
+      block.punched(@fist) if left or right
+    else if @body.touching.up && @grounded! && block.body.velocity.y > 100
+      @die!
 
   die: !->
     return if @dying

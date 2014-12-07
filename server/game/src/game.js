@@ -25,6 +25,7 @@
       x$.audio('box-break', asset('sounds/box-break.wav'));
       x$.audio('bgm', asset('bgm.ogg'));
       x$.spritesheet('basic-block', asset('blocks/basic.png'), 64, 64);
+      x$.spritesheet('bullet-block', asset('blocks/bullet.png'), 64, 64);
     };
     prototype.create = function(){
       (function(add, physics, world, camera){
@@ -77,7 +78,7 @@
       });
     };
     prototype.update = function(){
-      var x$, y$, delta, rnd, nextBlockX;
+      var x$, y$, delta, rnd, possibleBlocks, blockIndex, nextBlockX;
       if (!this.player.dying) {
         x$ = this.game.physics.arcade;
         x$.collide(this.player, this.layer);
@@ -89,14 +90,25 @@
         });
       }
       y$ = this.game.physics.arcade;
-      y$.collide(this.blocks, this.layer);
-      y$.collide(this.blocks, this.blocks);
+      y$.collide(this.blocks, this.layer, null, function(b, l){
+        return b.isBlock;
+      });
+      y$.collide(this.blocks, this.blocks, function(b1, b2){
+        if (b1.onBlockCollide) {
+          b1.onBlockCollide(b2);
+        }
+        if (b2.onBlockCollide) {
+          return b2.onBlockCollide(b1);
+        }
+      });
       delta = this.game.time.physicsElapsed;
       rnd = this.game.rnd;
       this.blockTimer -= delta;
       if (this.blockTimer <= 0) {
+        possibleBlocks = [BasicBlock, BulletBlock];
+        blockIndex = rnd.integerInRange(0, possibleBlocks.length - 1);
         nextBlockX = rnd.integerInRange(32, 800 - 32);
-        this.addBlock(BasicBlock, nextBlockX, 0);
+        this.addBlock(possibleBlocks[blockIndex], nextBlockX, 0);
         this.blockTimer = 1;
       }
     };

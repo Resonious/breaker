@@ -7,6 +7,7 @@
     function Block(spritesheet, game, core, x, y){
       var x$, this$ = this instanceof ctor$ ? this : new ctor$;
       Block.superclass.call(this$, game, x, y, spritesheet);
+      this$.spritesheet = spritesheet;
       this$.core = core;
       game.physics.arcade.enable(this$);
       this$.anchor.setTo(0.5, 0.5);
@@ -28,35 +29,24 @@
         return true;
       }
     };
-    prototype.update = function(){
-      var delta, velocity;
-      delta = this.game.time.physicsElapsed;
-      velocity = this.body.velocity;
-      velocity.x = towards(velocity.x, 0, 3000 * delta);
-    };
-    return Block;
-  }(Phaser.Sprite));
-  this.BasicBlock = BasicBlock = (function(superclass){
-    var prototype = extend$((import$(BasicBlock, superclass).displayName = 'BasicBlock', BasicBlock), superclass).prototype, constructor = BasicBlock;
-    prototype.damageFrames = 3;
-    function BasicBlock(){
-      var args, x$, this$ = this instanceof ctor$ ? this : new ctor$;
-      args = slice$.call(arguments);
-      BasicBlock.superclass.apply(this$, ['basic-block'].concat(slice$.call(args)));
-      this$.hitSound = this$.game.add.audio('box-hit');
-      this$.breakSound = this$.game.add.audio('box-break');
-      x$ = this$.emitter = this$.game.add.emitter(0, 0, 20);
-      x$.makeParticles('basic-block', [3, 4, 5]);
+    prototype.deathEmitter = function(frames){
+      var x$;
+      x$ = this.game.add.emitter(0, 0, 20);
+      x$.makeParticles(this.spritesheet, frames);
       x$.gravity = 200;
-      return this$;
-    } function ctor$(){} ctor$.prototype = prototype;
+      return x$;
+    };
     prototype.punched = function(fist){
-      this.body.velocity.x += 135 * -fist.player.direction;
+      if (fist) {
+        this.body.velocity.x += 135 * -fist.player.direction;
+      }
       this.body.velocity.y -= 100;
       if (this.takeDamage()) {
         return this.hitSound.play('', 0, 1, false);
       } else {
-        fist.player.score += 1;
+        if (fist) {
+          fist.player.score += this.scoreWorth;
+        }
         return this.core.score();
       }
     };
@@ -81,6 +71,27 @@
       this.emitter.destroy();
       return this.destroy();
     };
+    prototype.update = function(){
+      var delta, velocity;
+      delta = this.game.time.physicsElapsed;
+      velocity = this.body.velocity;
+      velocity.x = towards(velocity.x, 0, 3000 * delta);
+    };
+    return Block;
+  }(Phaser.Sprite));
+  this.BasicBlock = BasicBlock = (function(superclass){
+    var prototype = extend$((import$(BasicBlock, superclass).displayName = 'BasicBlock', BasicBlock), superclass).prototype, constructor = BasicBlock;
+    prototype.damageFrames = 3;
+    prototype.scoreWorth = 1;
+    function BasicBlock(){
+      var args, this$ = this instanceof ctor$ ? this : new ctor$;
+      args = slice$.call(arguments);
+      BasicBlock.superclass.apply(this$, ['basic-block'].concat(slice$.call(args)));
+      this$.hitSound = this$.game.add.audio('box-hit');
+      this$.breakSound = this$.game.add.audio('box-break');
+      this$.emitter = this$.deathEmitter([3, 4, 5]);
+      return this$;
+    } function ctor$(){} ctor$.prototype = prototype;
     return BasicBlock;
   }(Block));
   function extend$(sub, sup){
