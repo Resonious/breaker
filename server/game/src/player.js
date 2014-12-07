@@ -39,6 +39,7 @@
     prototype.hitboxWidth = 36;
     prototype.hitboxHeight = 49;
     prototype.fistSize = 16;
+    prototype.score = 0;
     function Player(game, core, x, y){
       var x$, y$, z$;
       Player.superclass.call(this, game, x, y, 'breaker');

@@ -32,6 +32,8 @@ class @Player extends Phaser.Sprite
   hitbox-height: 49
   fist-size: 16
 
+  score: 0
+
   (game, core, x, y) ->
     super game, x, y, 'breaker'
 

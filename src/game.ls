@@ -55,9 +55,17 @@ class @GameCore
 
       @blocks = add.group!
 
+      @score-text = add.text 40 5 'Score: 0',
+        font: '24px Arial'
+        fill: '#000000'
+        align: 'center'
+
       # DEBUG KEY BEHAVIOR
       @game.input.keyboard.add-key Phaser.Keyboard.D
         ..on-down.add ~> @add-block(BasicBlock, 300, 0)
+
+  score: ->
+    @score-text.text = "Score: #{@player.score}"
 
   add-block: (type, x, y) ->
     @blocks.add type(@game, this, x, y)

@@ -55,6 +55,9 @@
       this.body.velocity.y -= 100;
       if (this.takeDamage()) {
         return this.hitSound.play('', 0, 1, false);
+      } else {
+        fist.player.score += 1;
+        return this.core.score();
       }
     };
     prototype.dead = function(){

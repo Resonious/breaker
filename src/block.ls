@@ -43,6 +43,9 @@ class @BasicBlock extends Block
     @body.velocity.y -= 100
     if @take-damage!
       @hit-sound.play '' 0 1 false
+    else
+      fist.player.score += 1
+      @core.score!
 
   dead: ->
     return if @dying
