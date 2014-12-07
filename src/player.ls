@@ -210,9 +210,11 @@ class @Player extends Phaser.Sprite
 
   on-collide: (block) ->
     if @spinning!
+      return if block.already-hurt-by-roll and block.already-hurt-by-roll!
       const left  = @body.touching.left  && block.body.touching.right
       const right = @body.touching.right && block.body.touching.left
       block.punched(@fist) if left or right
+      block.hurt-by-roll-timer = 0.05
     else if @body.touching.up && @grounded! && block.body.velocity.y > 100
       block.body.velocity.y = -5 unless @die!
 

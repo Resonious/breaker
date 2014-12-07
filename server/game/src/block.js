@@ -8,6 +8,7 @@
     function Block(spritesheet, game, core, x, y){
       var x$, this$ = this instanceof ctor$ ? this : new ctor$;
       Block.superclass.call(this$, game, x, y, spritesheet);
+      this$.hurtByRollTimer = 0.0;
       this$.spritesheet = spritesheet;
       this$.core = core;
       game.physics.arcade.enable(this$);
@@ -83,10 +84,14 @@
       }
       return this.destroy();
     };
+    prototype.alreadyHurtByRoll = function(){
+      return this.hurtByRollTimer > 0;
+    };
     prototype.update = function(){
       var delta, velocity;
       delta = this.game.time.physicsElapsed;
       velocity = this.body.velocity;
+      this.hurtByRollTimer -= delta;
       velocity.x = towards(velocity.x, 0, 3000 * delta);
       if (this.body.touching.down) {
         this.body.gravity.y = 0;

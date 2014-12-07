@@ -5,6 +5,7 @@ class @Block extends Phaser.Sprite
   (spritesheet, game, core, x, y) ~>
     super game, x, y, spritesheet
 
+    @hurt-by-roll-timer = 0.0
     @spritesheet = spritesheet
     @core = core
     game.physics.arcade.enable this
@@ -59,9 +60,14 @@ class @Block extends Phaser.Sprite
     @emitter.destroy! if @emitter
     @destroy!
 
+  already-hurt-by-roll: ->
+    @hurt-by-roll-timer > 0
+
   update: !->
     const delta = @game.time.physics-elapsed
     const velocity = @body.velocity
+    @hurt-by-roll-timer -= delta
+
     # Friction sorta
     velocity.x = towards velocity.x, 0, 3000 * delta
 

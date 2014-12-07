@@ -227,11 +227,15 @@
     prototype.onCollide = function(block){
       var left, right;
       if (this.spinning()) {
+        if (block.alreadyHurtByRoll && block.alreadyHurtByRoll()) {
+          return;
+        }
         left = this.body.touching.left && block.body.touching.right;
         right = this.body.touching.right && block.body.touching.left;
         if (left || right) {
-          return block.punched(this.fist);
+          block.punched(this.fist);
         }
+        return block.hurtByRollTimer = 0.05;
       } else if (this.body.touching.up && this.grounded() && block.body.velocity.y > 100) {
         if (!this.die()) {
           return block.body.velocity.y = -5;
