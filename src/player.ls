@@ -45,6 +45,9 @@ class @Player extends Phaser.Sprite
       ..collide-world-bounds = false
       ..set-size @hitbox-width, @hitbox-height
 
+    @check-world-bounds = true
+    @events.on-out-of-bounds.add @die, this
+
     @punch-sound = @game.add.audio 'punch-sound'
 
     @fist = game.add.sprite 0 0
@@ -55,6 +58,7 @@ class @Player extends Phaser.Sprite
     @animations
       ..add 'idle' [0, 1, 2, 1]       4 true
       ..add 'walk' [3, 4, 5, 6, 7, 8] 10 true
+      ..add 'jump' [12] 0 false
       ..add 'spinning' [11] 0 false
       ..add 'punch1'   [11, 9]  25 false
       ..add 'punch2'   [11, 10] 25 false
@@ -160,12 +164,13 @@ class @Player extends Phaser.Sprite
         @spinning-timer -= delta
 
       else
+        @scale.x = -axis unless axis is 0
         @rotation = 0
-        unless axis is 0
-          @scale.x = -axis
-          @animations.play 'walk'
+        if @grounded!
+          @animations.play if axis is 0 then 'idle' else 'walk'
         else
-          @animations.play 'idle'
+          const velocity = @body.velocity
+          @animations.play if velocity.y > 0 then 'walk' else 'jump'
 
       # = DEBUG =
       # if @keys.down.is-down

@@ -51,6 +51,8 @@
       x$.gravity.y = 2000;
       x$.collideWorldBounds = false;
       x$.setSize(this.hitboxWidth, this.hitboxHeight);
+      this.checkWorldBounds = true;
+      this.events.onOutOfBounds.add(this.die, this);
       this.punchSound = this.game.add.audio('punch-sound');
       y$ = this.fist = game.add.sprite(0, 0);
       y$.player = this;
@@ -59,6 +61,7 @@
       z$ = this.animations;
       z$.add('idle', [0, 1, 2, 1], 4, true);
       z$.add('walk', [3, 4, 5, 6, 7, 8], 10, true);
+      z$.add('jump', [12], 0, false);
       z$.add('spinning', [11], 0, false);
       z$.add('punch1', [11, 9], 25, false);
       z$.add('punch2', [11, 10], 25, false);
@@ -81,7 +84,7 @@
       this.game.debug.body(this.fist);
     };
     prototype.update = function(){
-      var delta, axis, grounded, targetSpeed, towardsTargetBy, x$, anim, this$ = this;
+      var delta, axis, grounded, targetSpeed, towardsTargetBy, x$, anim, velocity, this$ = this;
       this.updateFistPositions();
       if (isNaN(
       this.body.velocity.x)) {
@@ -160,12 +163,15 @@
           this.rotation += -0.3 * this.direction;
           this.spinningTimer -= delta;
         } else {
-          this.rotation = 0;
           if (axis !== 0) {
             this.scale.x = -axis;
-            this.animations.play('walk');
+          }
+          this.rotation = 0;
+          if (this.grounded()) {
+            this.animations.play(axis === 0 ? 'idle' : 'walk');
           } else {
-            this.animations.play('idle');
+            velocity = this.body.velocity;
+            this.animations.play(velocity.y > 0 ? 'walk' : 'jump');
           }
         }
       }
