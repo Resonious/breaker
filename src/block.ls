@@ -10,7 +10,7 @@ class @Block extends Phaser.Sprite
     @body
       ..bounce.y = 0.1
       ..bounce.x = 0.3
-      ..gravity.y = 2000
+      ..gravity.y = 700
       ..collide-world-bounds = false
 
   take-damage: (dmg) ->
@@ -39,7 +39,7 @@ class @BasicBlock extends Block
       ..gravity = 200
 
   punched: (fist) ->
-    @body.velocity.x += 200 * -fist.player.direction
+    @body.velocity.x += 135 * -fist.player.direction
     @body.velocity.y -= 100
     if @take-damage!
       @hit-sound.play '' 0 1 false

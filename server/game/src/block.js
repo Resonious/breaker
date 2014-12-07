@@ -13,7 +13,7 @@
       x$ = this$.body;
       x$.bounce.y = 0.1;
       x$.bounce.x = 0.3;
-      x$.gravity.y = 2000;
+      x$.gravity.y = 700;
       x$.collideWorldBounds = false;
       return this$;
     } function ctor$(){} ctor$.prototype = prototype;
@@ -51,7 +51,7 @@
       return this$;
     } function ctor$(){} ctor$.prototype = prototype;
     prototype.punched = function(fist){
-      this.body.velocity.x += 200 * -fist.player.direction;
+      this.body.velocity.x += 135 * -fist.player.direction;
       this.body.velocity.y -= 100;
       if (this.takeDamage()) {
         return this.hitSound.play('', 0, 1, false);

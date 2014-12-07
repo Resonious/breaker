@@ -5,6 +5,7 @@
   this.GameCore = GameCore = (function(){
     GameCore.displayName = 'GameCore';
     var prototype = GameCore.prototype, constructor = GameCore;
+    prototype.blockTimer = 2.5;
     function GameCore(game){
       this.game = game;
     }
@@ -68,7 +69,7 @@
       });
     };
     prototype.update = function(){
-      var x$, y$;
+      var x$, y$, delta, rnd, nextBlockX;
       if (!this.player.dying) {
         x$ = this.game.physics.arcade;
         x$.collide(this.player, this.layer);
@@ -82,6 +83,14 @@
       y$ = this.game.physics.arcade;
       y$.collide(this.blocks, this.layer);
       y$.collide(this.blocks, this.blocks);
+      delta = this.game.time.physicsElapsed;
+      rnd = this.game.rnd;
+      this.blockTimer -= delta;
+      if (this.blockTimer <= 0) {
+        nextBlockX = rnd.integerInRange(32, 800 - 32);
+        this.addBlock(BasicBlock, nextBlockX, 0);
+        this.blockTimer = 1;
+      }
     };
     prototype.render = function(){};
     return GameCore;

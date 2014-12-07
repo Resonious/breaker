@@ -1,6 +1,8 @@
 {each, all, map} = require 'prelude-ls'
 
 class @GameCore
+  block-timer: 2.5
+
   (game) !->
     @game = game
 
@@ -77,6 +79,17 @@ class @GameCore
     @game.physics.arcade
       ..collide @blocks, @layer
       ..collide @blocks, @blocks
+
+    const delta = @game.time.physics-elapsed
+    const rnd   = @game.rnd
+    @block-timer -= delta
+
+    if @block-timer <= 0
+      const next-block-x = rnd.integer-in-range 32 800 - 32
+      # TODO random block type (when we have more of those!)
+      @add-block BasicBlock, next-block-x, 0
+      # TODO function for more interesting block intervals
+      @block-timer = 1
 
   render: !->
     # @player.debug-fist-positions!
