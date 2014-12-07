@@ -7,17 +7,17 @@ class @ChestBlock extends Block
     @hit-sound   = @game.add.audio 'chest-hit'
     @break-sound = @game.add.audio 'chest-break'
     @emitter     = @death-emitter [4, 5]
-    @health = 20
+    @health = 10
 
   take-damage: (dmg) ->
     return if @dying
     @health -= dmg or 1
     @animations.frame =
       switch
-      | (@health > 15) => 0
-      | (@health > 10) => 1
-      | (@health > 5)  => 2
-      | otherwise      => 3
+      | (@health > 7) => 0
+      | (@health > 5) => 1
+      | (@health > 2) => 2
+      | otherwise     => 3
 
     if @health <= 0
       @dead! if @dead
@@ -25,12 +25,12 @@ class @ChestBlock extends Block
     else
       true
 
-  test-layer-collision: (layer) ->
-    if @body.blocked.left
-      @body.velocity.x += 100
-    else if @body.blocked.right
-      @body.velocity.x -= 100
-    true
+#   test-layer-collision: (layer) ->
+#     if @body.blocked.left
+#       @body.velocity.x += 100
+#     else if @body.blocked.right
+#       @body.velocity.x -= 100
+#     true
 
   dead: ->
     super!

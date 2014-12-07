@@ -58,7 +58,7 @@
         this.game.time.advancedTiming = true;
         physics.startSystem(Phaser.Physics.Arcade);
         physics.arcade.TILE_BIAS = 32;
-        physics.arcade.OVERLAP_BIAS = 32;
+        physics.arcade.OVERLAP_BIAS = 16;
         z$ = map = add.tilemap('map');
         z$.addTilesetImage('basic', 'basic-tile');
         z$.setCollision(1);

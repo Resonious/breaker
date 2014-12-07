@@ -49,7 +49,7 @@ class @Player extends Phaser.Sprite
       ..set-size @hitbox-width, @hitbox-height
 
     @check-world-bounds = true
-    @events.on-out-of-bounds.add @die, this
+    @events.on-out-of-bounds.add (-> @die true), this
 
     @punch-sound = @game.add.audio 'punch-sound'
     @charge-down = @game.add.audio 'charge-down'
@@ -216,12 +216,12 @@ class @Player extends Phaser.Sprite
     else if @body.touching.up && @grounded! && block.body.velocity.y > 100
       block.body.velocity.y = -5 unless @die!
 
-  die: ->
-    return if @dying or @invincible
+  die: (force) ->
+    return false if @dying or (!force and @invincible)
     if @power-up
       @charge-down.play '' 0 1 false
       @cancel-power-up!
-      return false
+      return false unless force
     console.log 'WASTED'
     @body.velocity.y = 0
     @body.gravity.y = 500

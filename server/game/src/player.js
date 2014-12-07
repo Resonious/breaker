@@ -54,7 +54,9 @@
       x$.collideWorldBounds = false;
       x$.setSize(this.hitboxWidth, this.hitboxHeight);
       this.checkWorldBounds = true;
-      this.events.onOutOfBounds.add(this.die, this);
+      this.events.onOutOfBounds.add(function(){
+        return this.die(true);
+      }, this);
       this.punchSound = this.game.add.audio('punch-sound');
       this.chargeDown = this.game.add.audio('charge-down');
       y$ = this.fist = game.add.sprite(0, 0);
@@ -236,14 +238,16 @@
         }
       }
     };
-    prototype.die = function(){
-      if (this.dying || this.invincible) {
-        return;
+    prototype.die = function(force){
+      if (this.dying || (!force && this.invincible)) {
+        return false;
       }
       if (this.powerUp) {
         this.chargeDown.play('', 0, 1, false);
         this.cancelPowerUp();
-        return false;
+        if (!force) {
+          return false;
+        }
       }
       console.log('WASTED');
       this.body.velocity.y = 0;

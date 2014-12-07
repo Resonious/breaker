@@ -58,7 +58,7 @@ class @GameCore
 
       physics.start-system Phaser.Physics.Arcade
       physics.arcade.TILE_BIAS    = 32
-      physics.arcade.OVERLAP_BIAS = 32
+      physics.arcade.OVERLAP_BIAS = 16
 
       map = add.tilemap 'map'
         ..add-tileset-image 'basic', 'basic-tile'
