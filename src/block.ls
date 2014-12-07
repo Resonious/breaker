@@ -1,5 +1,6 @@
 class @Block extends Phaser.Sprite
   is-block: true
+  gravity: 700
 
   (spritesheet, game, core, x, y) ~>
     super game, x, y, spritesheet
@@ -11,7 +12,7 @@ class @Block extends Phaser.Sprite
     @body
       ..bounce.y = 0.1
       ..bounce.x = 0.3
-      ..gravity.y = 700
+      ..gravity.y = @gravity
       ..collide-world-bounds = false
 
   take-damage: (dmg) ->
@@ -60,6 +61,11 @@ class @Block extends Phaser.Sprite
     const velocity = @body.velocity
     # Friction sorta
     velocity.x = towards velocity.x, 0, 3000 * delta
+
+    if @body.touching.down
+      @body.gravity.y = 0
+    else
+      @body.gravity.y = @gravity
 
 class @BasicBlock extends Block
   damage-frames: 3

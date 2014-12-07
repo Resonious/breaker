@@ -39,7 +39,7 @@
         this.game.stage.backgroundColor = '#1B03E38';
         y$ = add.emitter(this.game.world.centerX, 200, 200);
         y$.width = 800;
-        y$.makeParticles('stars');
+        y$.makeParticles('stars', [0, 1, 2, 3, 4, 5, 6]);
         y$.minParticleSpeed.set(0, 0);
         y$.maxParticleSpeed.set(0, 400);
         y$.y = 0;

@@ -39,7 +39,7 @@ class @GameCore
       @game.stage.background-color = '#1B03E38'
       add.emitter @game.world.center-x, 200, 200
         ..width = 800
-        ..make-particles 'stars'
+        ..make-particles 'stars', [0, 1, 2, 3, 4, 5, 6]
         ..min-particle-speed.set 0 0
         ..max-particle-speed.set 0 400
         ..y = 0

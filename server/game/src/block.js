@@ -4,6 +4,7 @@
   this.Block = Block = (function(superclass){
     var prototype = extend$((import$(Block, superclass).displayName = 'Block', Block), superclass).prototype, constructor = Block;
     prototype.isBlock = true;
+    prototype.gravity = 700;
     function Block(spritesheet, game, core, x, y){
       var x$, this$ = this instanceof ctor$ ? this : new ctor$;
       Block.superclass.call(this$, game, x, y, spritesheet);
@@ -14,7 +15,7 @@
       x$ = this$.body;
       x$.bounce.y = 0.1;
       x$.bounce.x = 0.3;
-      x$.gravity.y = 700;
+      x$.gravity.y = this$.gravity;
       x$.collideWorldBounds = false;
       return this$;
     } function ctor$(){} ctor$.prototype = prototype;
@@ -76,6 +77,11 @@
       delta = this.game.time.physicsElapsed;
       velocity = this.body.velocity;
       velocity.x = towards(velocity.x, 0, 3000 * delta);
+      if (this.body.touching.down) {
+        this.body.gravity.y = 0;
+      } else {
+        this.body.gravity.y = this.gravity;
+      }
     };
     return Block;
   }(Phaser.Sprite));
