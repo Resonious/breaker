@@ -1,6 +1,4 @@
 class @ChestBlock extends Block
-  @reroll-chance = 0
-
   damage-frames: 4
   score-worth: 50
 
@@ -9,16 +7,16 @@ class @ChestBlock extends Block
     @hit-sound   = @game.add.audio 'chest-hit'
     @break-sound = @game.add.audio 'chest-break'
     @emitter     = @death-emitter [4, 5]
-    @health = 50
+    @health = 20
 
   take-damage: (dmg) ->
     return if @dying
-    @health -= dmg if dmg
+    @health -= dmg or 1
     @animations.frame =
       switch
-      | (@health > 40) => 0
-      | (@health > 25) => 1
-      | (@health > 15) => 2
+      | (@health > 15) => 0
+      | (@health > 10) => 1
+      | (@health > 5)  => 2
       | otherwise      => 3
 
     if @health <= 0
@@ -33,3 +31,7 @@ class @ChestBlock extends Block
     else if @body.blocked.right
       @body.velocity.x -= 100
     true
+
+  dead: ->
+    super!
+    @core.add-power-up PowerUp, @x, @y

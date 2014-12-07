@@ -52,6 +52,7 @@ class @Player extends Phaser.Sprite
     @events.on-out-of-bounds.add @die, this
 
     @punch-sound = @game.add.audio 'punch-sound'
+    @charge-down = @game.add.audio 'charge-down'
 
     @fist = game.add.sprite 0 0
       ..player = this
@@ -83,6 +84,17 @@ class @Player extends Phaser.Sprite
   debug-fist-positions: !->
     @game.debug.body @fist
 
+  cancel-power-up: ->
+    return unless @power-up
+    @remove-child @power-up.effect
+    @power-up.finish(this)
+    @power-up = null
+
+  add-power-up: (effect, on-use, update-after-use, on-finish) ->
+    @cancel-power-up!
+    @power-up = { effect: effect, use: on-use, update: update-after-use, finish: on-finish }
+    @add-child effect
+
   update: !->
     @update-fist-positions!
     @body.velocity.x = 0 if @body.velocity.x |> isNaN
@@ -90,7 +102,7 @@ class @Player extends Phaser.Sprite
     const delta = @game.time.physics-elapsed
     return if @keys is null
     axis = left-right-axis @keys.left.is-down, @keys.right.is-down
-    axis = 0 if @dying
+    axis = 0 if @dying or @disable-controls
     @direction = -axis if axis isnt 0
 
     # =========== AIR TIMING AND GROUND MANAGEMENT ===
@@ -119,7 +131,7 @@ class @Player extends Phaser.Sprite
 
         const key = @keys[it]
 
-        if key.down-duration(10)
+        if key.down-duration(10) and not @disable-controls
           @double-click-counter[it] += 1
           @double-click-timer[it]   = 0.25
 
@@ -130,10 +142,11 @@ class @Player extends Phaser.Sprite
             @spin-cooldown-timer = 0.2
 
     # ================ MOVEMENT ================
-    const target-speed = if @punch-delay <= 0 then 250 * axis else 0
-    towards-target-by  = @body.velocity.x `towards` target-speed
+    unless @dont-adjust-velocity
+      const target-speed = if @punch-delay <= 0 then 250 * axis else 0
+      towards-target-by  = @body.velocity.x `towards` target-speed
 
-    @body.velocity.x = towards-target-by 3000 * delta
+      @body.velocity.x = towards-target-by 3000 * delta
 
     # ================ JUMP =====================
     if @keys.up.is-down
@@ -185,9 +198,13 @@ class @Player extends Phaser.Sprite
           const velocity = @body.velocity
           @animations.play if velocity.y > 0 then 'walk' else 'jump'
 
-      # = DEBUG =
-      # if @keys.down.is-down
-        # @rotation += 0.1
+    # ================ SPECIAL ==============
+    if @power-up and @power-up.in-use
+      @power-up.update(this)
+
+    if @special-key.down-duration(10) and @power-up and not @power-up.in-use
+      @power-up.use(this)
+      @power-up.in-use = true
 
   spinning: -> @spinning-timer > 0
 
@@ -197,10 +214,14 @@ class @Player extends Phaser.Sprite
       const right = @body.touching.right && block.body.touching.left
       block.punched(@fist) if left or right
     else if @body.touching.up && @grounded! && block.body.velocity.y > 100
-      @die!
+      block.body.velocity.y = -5 unless @die!
 
-  die: !->
-    return if @dying
+  die: ->
+    return if @dying or @invincible
+    if @power-up
+      @charge-down.play '' 0 1 false
+      @cancel-power-up!
+      return false
     console.log 'WASTED'
     @body.velocity.y = 0
     @body.gravity.y = 500
@@ -210,5 +231,6 @@ class @Player extends Phaser.Sprite
     @animations.stop!
 
     @game.time.events.add 5000, (-> @state.start 'Game'), @game
+    true
 
   grounded: -> @body.blocked.down or @body.touching.down

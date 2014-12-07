@@ -12,6 +12,7 @@ class @GameCore
       ..image       'bg'          asset 'bg.png'
       ..spritesheet 'stars'       (asset 'stars.png'), 8 8
       ..spritesheet 'explosion'   (asset 'explosion.png'), 192 192
+      ..spritesheet 'power-up'    (asset 'power-up.png'), 32 32
       ..tilemap     'map',        (asset 'map/basic-map.json'), null, Phaser.Tilemap.TILED_JSON
       ..image       'smoke'       asset 'smoke-cloud.png'
       ..audio       'punch-sound' asset 'sounds/punch.wav'
@@ -23,13 +24,16 @@ class @GameCore
       ..audio       'chest-break' asset 'sounds/chest-break.wav'
       ..audio       'boom'        asset 'sounds/explosion.wav'
       ..audio       'beep'        asset 'sounds/beep.wav'
+      ..audio       'charge-up'   asset 'sounds/charge-up.wav'
+      ..audio       'charge-down' asset 'sounds/charge-down.wav'
+      ..audio       'blast-off'   asset 'sounds/blast-off.wav'
 
       ..audio 'bgm' asset 'bgm.ogg'
 
       ..spritesheet 'basic-block'  (asset 'blocks/basic.png') , 64 64
       ..spritesheet 'bullet-block' (asset 'blocks/bullet.png'), 64 64
       ..spritesheet 'tnt-block'    (asset 'blocks/tnt.png')   , 64 64
-      ..spritesheet 'chest-block'  (asset 'blocks/chest.png')  , 64 64
+      ..spritesheet 'chest-block'  (asset 'blocks/chest.png') , 64 64
 
   create: !->
     let (add     = @game.add,
@@ -64,15 +68,19 @@ class @GameCore
 
       @arrow-keys = @game.input.keyboard.create-cursor-keys!
       @punch-key = @game.input.keyboard.add-key Phaser.Keyboard.Z
+      @special-key = @game.input.keyboard.add-key Phaser.Keyboard.X
 
       @player = add.existing new Player(@game, this, 400, 500)
-        ..keys      = @arrow-keys
-        ..punch-key = @punch-key
+        ..keys        = @arrow-keys
+        ..punch-key   = @punch-key
+        ..special-key = @special-key
         ..initialize-smoke!
 
-      @blocks = add.group!
+      @blocks    = add.group!
+      @power-ups = add.group!
       @block-interval = 2
       @block-timer    = @block-interval
+      @chest-block-in = 5
 
       @score-text = add.text 40 5 'Score: 0',
         font: '24px Arial'
@@ -81,13 +89,17 @@ class @GameCore
 
       # DEBUG KEY BEHAVIOR
       @game.input.keyboard.add-key Phaser.Keyboard.D
-        ..on-down.add ~> @d-chest = @add-block(ChestBlock, 300, 0)
+        ..on-down.add ~>
+          @add-power-up PowerUp, 400, 450
 
   score: ->
     @score-text.text = "Score: #{@player.score}"
 
+  add-power-up: (type, x, y) ->
+    @power-ups.add new type(@game, this, x, y)
+
   add-block: (type, x, y) ->
-    @blocks.add type(@game, this, x, y)
+    @blocks.add new type(@game, this, x, y)
 
   # Called by Player
   punch: (fist) !->
@@ -99,11 +111,16 @@ class @GameCore
 
   update: !->
     unless @player.dying
-      @game.physics.arcade
-        ..collide @player, @layer
-        ..collide @player, @blocks, (plr, blck) ->
+      const plr-blk-collide = (plr, blck) ->
           blck.on-collide(plr) if blck.on-collide
           plr.on-collide(blck)
+
+      @game.physics.arcade
+        ..collide @player, @layer
+        ..collide @player, @blocks, plr-blk-collide, @player.block-collide-test,
+        ..collide @player, @power-ups, null, (plr, pwr) ->
+          pwr.picked-up(plr)
+          false
 
     @game.physics.arcade
       ..collide @blocks, @layer, null, (b, l) ->
@@ -116,25 +133,31 @@ class @GameCore
     @block-timer -= delta
 
     if @block-timer <= 0
-      @generate-block(@game.rnd)
+      @chest-block-in -= 1
+      chest = null
+      if @chest-block-in <= 0
+        chest = ChestBlock
+        @chest-block-in = 20
+
+      @generate-block(@game.rnd, chest)
       @block-timer = @block-interval
       unless @block-timer <= 0.7
         @block-interval *= 0.85
       else if @block-interval > 0.5
         @block-interval -= 0.001
 
-  generate-block: (rnd) ->
+  generate-block: (rnd, use-this-one) ->
     const possible-blocks = [BasicBlock, BulletBlock, TntBlock]
     const block-index     = rnd.integer-in-range 0 possible-blocks.length - 1
     const next-block-x    = rnd.integer-in-range 1, 800 / 64 - 2
-    block = possible-blocks[block-index]
+    block = use-this-one or possible-blocks[block-index]
     if block.reroll-chance
       const chance = rnd.integer-in-range 0 100
       return @generate-block(rnd) if chance < block.reroll-chance
 
-    @add-block possible-blocks[block-index], next-block-x * 64, 0
+    @add-block block, next-block-x * 64, 0
 
   render: !->
-    @game.debug.text "chest health: #{@d-chest.health}" 200 200 if @d-chest
+    # @game.debug.text "chest health: #{@d-chest.health}" 200 200 if @d-chest
     # @player.debug-fist-positions!
     # @game.debug.body @player

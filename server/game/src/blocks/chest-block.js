@@ -3,7 +3,6 @@
   var ChestBlock, slice$ = [].slice;
   this.ChestBlock = ChestBlock = (function(superclass){
     var prototype = extend$((import$(ChestBlock, superclass).displayName = 'ChestBlock', ChestBlock), superclass).prototype, constructor = ChestBlock;
-    ChestBlock.rerollChance = 0;
     prototype.damageFrames = 4;
     prototype.scoreWorth = 50;
     function ChestBlock(){
@@ -13,23 +12,21 @@
       this$.hitSound = this$.game.add.audio('chest-hit');
       this$.breakSound = this$.game.add.audio('chest-break');
       this$.emitter = this$.deathEmitter([4, 5]);
-      this$.health = 50;
+      this$.health = 20;
       return this$;
     } function ctor$(){} ctor$.prototype = prototype;
     prototype.takeDamage = function(dmg){
       if (this.dying) {
         return;
       }
-      if (dmg) {
-        this.health -= dmg;
-      }
+      this.health -= dmg || 1;
       this.animations.frame = (function(){
         switch (false) {
-        case !(this.health > 40):
-          return 0;
-        case !(this.health > 25):
-          return 1;
         case !(this.health > 15):
+          return 0;
+        case !(this.health > 10):
+          return 1;
+        case !(this.health > 5):
           return 2;
         default:
           return 3;
@@ -51,6 +48,10 @@
         this.body.velocity.x -= 100;
       }
       return true;
+    };
+    prototype.dead = function(){
+      superclass.prototype.dead.call(this);
+      return this.core.addPowerUp(PowerUp, this.x, this.y);
     };
     return ChestBlock;
   }(Block));

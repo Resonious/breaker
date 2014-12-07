@@ -56,6 +56,7 @@
       this.checkWorldBounds = true;
       this.events.onOutOfBounds.add(this.die, this);
       this.punchSound = this.game.add.audio('punch-sound');
+      this.chargeDown = this.game.add.audio('charge-down');
       y$ = this.fist = game.add.sprite(0, 0);
       y$.player = this;
       game.physics.arcade.enable(this.fist);
@@ -85,6 +86,24 @@
     prototype.debugFistPositions = function(){
       this.game.debug.body(this.fist);
     };
+    prototype.cancelPowerUp = function(){
+      if (!this.powerUp) {
+        return;
+      }
+      this.removeChild(this.powerUp.effect);
+      this.powerUp.finish(this);
+      return this.powerUp = null;
+    };
+    prototype.addPowerUp = function(effect, onUse, updateAfterUse, onFinish){
+      this.cancelPowerUp();
+      this.powerUp = {
+        effect: effect,
+        use: onUse,
+        update: updateAfterUse,
+        finish: onFinish
+      };
+      return this.addChild(effect);
+    };
     prototype.update = function(){
       var delta, axis, grounded, targetSpeed, towardsTargetBy, x$, anim, velocity, this$ = this;
       this.updateFistPositions();
@@ -97,7 +116,7 @@
         return;
       }
       axis = leftRightAxis(this.keys.left.isDown, this.keys.right.isDown);
-      if (this.dying) {
+      if (this.dying || this.disableControls) {
         axis = 0;
       }
       if (axis !== 0) {
@@ -125,7 +144,7 @@
             this$.doubleClickCounter[it] = 0;
           }
           key = this$.keys[it];
-          if (key.downDuration(10)) {
+          if (key.downDuration(10) && !this$.disableControls) {
             this$.doubleClickCounter[it] += 1;
             this$.doubleClickTimer[it] = 0.25;
             if (this$.doubleClickCounter[it] === 2) {
@@ -138,9 +157,11 @@
         })(
         ['left', 'right']);
       }
-      targetSpeed = this.punchDelay <= 0 ? 250 * axis : 0;
-      towardsTargetBy = towards(this.body.velocity.x, targetSpeed);
-      this.body.velocity.x = towardsTargetBy(3000 * delta);
+      if (!this.dontAdjustVelocity) {
+        targetSpeed = this.punchDelay <= 0 ? 250 * axis : 0;
+        towardsTargetBy = towards(this.body.velocity.x, targetSpeed);
+        this.body.velocity.x = towardsTargetBy(3000 * delta);
+      }
       if (this.keys.up.isDown) {
         if (this.grounded() || this.airTimer < this.jumpWhileOffGroundTime) {
           this.body.velocity.y = -this.jumpForce;
@@ -190,6 +211,13 @@
           }
         }
       }
+      if (this.powerUp && this.powerUp.inUse) {
+        this.powerUp.update(this);
+      }
+      if (this.specialKey.downDuration(10) && this.powerUp && !this.powerUp.inUse) {
+        this.powerUp.use(this);
+        this.powerUp.inUse = true;
+      }
     };
     prototype.spinning = function(){
       return this.spinningTimer > 0;
@@ -203,12 +231,19 @@
           return block.punched(this.fist);
         }
       } else if (this.body.touching.up && this.grounded() && block.body.velocity.y > 100) {
-        return this.die();
+        if (!this.die()) {
+          return block.body.velocity.y = -5;
+        }
       }
     };
     prototype.die = function(){
-      if (this.dying) {
+      if (this.dying || this.invincible) {
         return;
+      }
+      if (this.powerUp) {
+        this.chargeDown.play('', 0, 1, false);
+        this.cancelPowerUp();
+        return false;
       }
       console.log('WASTED');
       this.body.velocity.y = 0;
@@ -220,6 +255,7 @@
       this.game.time.events.add(5000, function(){
         return this.state.start('Game');
       }, this.game);
+      return true;
     };
     prototype.grounded = function(){
       return this.body.blocked.down || this.body.touching.down;

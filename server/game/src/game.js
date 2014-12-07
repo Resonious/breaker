@@ -19,6 +19,7 @@
       x$.image('bg', asset('bg.png'));
       x$.spritesheet('stars', asset('stars.png'), 8, 8);
       x$.spritesheet('explosion', asset('explosion.png'), 192, 192);
+      x$.spritesheet('power-up', asset('power-up.png'), 32, 32);
       x$.tilemap('map', asset('map/basic-map.json'), null, Phaser.Tilemap.TILED_JSON);
       x$.image('smoke', asset('smoke-cloud.png'));
       x$.audio('punch-sound', asset('sounds/punch.wav'));
@@ -30,6 +31,9 @@
       x$.audio('chest-break', asset('sounds/chest-break.wav'));
       x$.audio('boom', asset('sounds/explosion.wav'));
       x$.audio('beep', asset('sounds/beep.wav'));
+      x$.audio('charge-up', asset('sounds/charge-up.wav'));
+      x$.audio('charge-down', asset('sounds/charge-down.wav'));
+      x$.audio('blast-off', asset('sounds/blast-off.wav'));
       x$.audio('bgm', asset('bgm.ogg'));
       x$.spritesheet('basic-block', asset('blocks/basic.png'), 64, 64);
       x$.spritesheet('bullet-block', asset('blocks/bullet.png'), 64, 64);
@@ -62,13 +66,17 @@
         z1$.resizeWorld();
         this.arrowKeys = this.game.input.keyboard.createCursorKeys();
         this.punchKey = this.game.input.keyboard.addKey(Phaser.Keyboard.Z);
+        this.specialKey = this.game.input.keyboard.addKey(Phaser.Keyboard.X);
         z2$ = this.player = add.existing(new Player(this.game, this, 400, 500));
         z2$.keys = this.arrowKeys;
         z2$.punchKey = this.punchKey;
+        z2$.specialKey = this.specialKey;
         z2$.initializeSmoke();
         this.blocks = add.group();
+        this.powerUps = add.group();
         this.blockInterval = 2;
         this.blockTimer = this.blockInterval;
+        this.chestBlockIn = 5;
         this.scoreText = add.text(40, 5, 'Score: 0', {
           font: '24px Arial',
           fill: '#000000',
@@ -76,15 +84,18 @@
         });
         z3$ = this.game.input.keyboard.addKey(Phaser.Keyboard.D);
         z3$.onDown.add(function(){
-          return this$.dChest = this$.addBlock(ChestBlock, 300, 0);
+          return this$.addPowerUp(PowerUp, 400, 450);
         });
       }.call(this, this.game.add, this.game.physics, this.game.world, this.game.camera));
     };
     prototype.score = function(){
       return this.scoreText.text = "Score: " + this.player.score;
     };
+    prototype.addPowerUp = function(type, x, y){
+      return this.powerUps.add(new type(this.game, this, x, y));
+    };
     prototype.addBlock = function(type, x, y){
-      return this.blocks.add(type(this.game, this, x, y));
+      return this.blocks.add(new type(this.game, this, x, y));
     };
     prototype.punch = function(fist){
       var x$;
@@ -97,16 +108,20 @@
       });
     };
     prototype.update = function(){
-      var x$, y$, delta;
+      var plrBlkCollide, x$, y$, delta, chest;
       if (!this.player.dying) {
-        x$ = this.game.physics.arcade;
-        x$.collide(this.player, this.layer);
-        x$.collide(this.player, this.blocks, function(plr, blck){
+        plrBlkCollide = function(plr, blck){
           if (blck.onCollide) {
             blck.onCollide(plr);
           }
           return plr.onCollide(blck);
-        });
+        };
+        x$ = this.game.physics.arcade;
+        x$.collide(this.player, this.layer);
+        x$.collide(this.player, this.blocks, plrBlkCollide, this.player.blockCollideTest, x$.collide(this.player, this.powerUps, null, function(plr, pwr){
+          pwr.pickedUp(plr);
+          return false;
+        }));
       }
       y$ = this.game.physics.arcade;
       y$.collide(this.blocks, this.layer, null, function(b, l){
@@ -127,7 +142,13 @@
       delta = this.game.time.physicsElapsed;
       this.blockTimer -= delta;
       if (this.blockTimer <= 0) {
-        this.generateBlock(this.game.rnd);
+        this.chestBlockIn -= 1;
+        chest = null;
+        if (this.chestBlockIn <= 0) {
+          chest = ChestBlock;
+          this.chestBlockIn = 20;
+        }
+        this.generateBlock(this.game.rnd, chest);
         this.blockTimer = this.blockInterval;
         if (!(this.blockTimer <= 0.7)) {
           this.blockInterval *= 0.85;
@@ -136,25 +157,21 @@
         }
       }
     };
-    prototype.generateBlock = function(rnd){
+    prototype.generateBlock = function(rnd, useThisOne){
       var possibleBlocks, blockIndex, nextBlockX, block, chance;
       possibleBlocks = [BasicBlock, BulletBlock, TntBlock];
       blockIndex = rnd.integerInRange(0, possibleBlocks.length - 1);
       nextBlockX = rnd.integerInRange(1, 800 / 64 - 2);
-      block = possibleBlocks[blockIndex];
+      block = useThisOne || possibleBlocks[blockIndex];
       if (block.rerollChance) {
         chance = rnd.integerInRange(0, 100);
         if (chance < block.rerollChance) {
           return this.generateBlock(rnd);
         }
       }
-      return this.addBlock(possibleBlocks[blockIndex], nextBlockX * 64, 0);
+      return this.addBlock(block, nextBlockX * 64, 0);
     };
-    prototype.render = function(){
-      if (this.dChest) {
-        this.game.debug.text("chest health: " + this.dChest.health, 200, 200);
-      }
-    };
+    prototype.render = function(){};
     return GameCore;
   }());
 }).call(this);
