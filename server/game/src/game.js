@@ -122,8 +122,10 @@
         nextBlockX = rnd.integerInRange(1, 800 / 64 - 2);
         this.addBlock(possibleBlocks[blockIndex], nextBlockX * 64, 0);
         this.blockTimer = this.blockInterval;
-        if (!(this.blockInterval <= 0.7)) {
+        if (!(this.blockTimer <= 0.7)) {
           this.blockInterval *= 0.85;
+        } else if (this.blockInterval > 0.5) {
+          this.blockInterval -= 0.001;
         }
       }
     };

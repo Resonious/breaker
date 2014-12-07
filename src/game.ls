@@ -117,7 +117,10 @@ class @GameCore
 
       @add-block possible-blocks[block-index], next-block-x * 64, 0
       @block-timer = @block-interval
-      @block-interval *= 0.85 unless @block-interval <= 0.7
+      unless @block-timer <= 0.7
+        @block-interval *= 0.85
+      else if @block-interval > 0.5
+        @block-interval -= 0.001
 
   render: !->
     # @player.debug-fist-positions!

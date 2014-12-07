@@ -60,6 +60,7 @@ class @TntBlock extends Block
     return if @countdown-num is -1
     const delta = @game.time.physics-elapsed
     @death-timer -= delta
+
     if @death-timer <= 0
       @death-timer = 1.0
       @countdown-num -= 1
