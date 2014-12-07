@@ -25,6 +25,9 @@
       }
       this.animations.frame += dmg || 1;
       if (this.animations.frame >= this.damageFrames) {
+        if (this.maxFrame) {
+          this.animations.frame = this.maxFrame;
+        }
         if (this.dead) {
           this.dead();
         }

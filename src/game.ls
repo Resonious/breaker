@@ -11,6 +11,7 @@ class @GameCore
       ..image       'basic-tile'  asset 'better-basic-tile.png'
       ..image       'bg'          asset 'bg.png'
       ..spritesheet 'stars'       (asset 'stars.png'), 8 8
+      ..spritesheet 'explosion'   (asset 'explosion.png'), 192 192
       ..tilemap     'map',        (asset 'map/basic-map.json'), null, Phaser.Tilemap.TILED_JSON
       ..image       'smoke'       asset 'smoke-cloud.png'
       ..audio       'punch-sound' asset 'sounds/punch.wav'
@@ -18,6 +19,8 @@ class @GameCore
       ..audio       'box-hit'     asset 'sounds/box-hit.wav'
       ..audio       'box-break'   asset 'sounds/box-break.wav'
       ..audio       'box-shoot'   asset 'sounds/bullet-shoot.wav'
+      ..audio       'boom'        asset 'sounds/explosion.wav'
+      ..audio       'beep'        asset 'sounds/beep.wav'
 
       ..audio 'bgm' asset 'bgm.ogg'
 

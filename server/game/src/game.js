@@ -18,6 +18,7 @@
       x$.image('basic-tile', asset('better-basic-tile.png'));
       x$.image('bg', asset('bg.png'));
       x$.spritesheet('stars', asset('stars.png'), 8, 8);
+      x$.spritesheet('explosion', asset('explosion.png'), 192, 192);
       x$.tilemap('map', asset('map/basic-map.json'), null, Phaser.Tilemap.TILED_JSON);
       x$.image('smoke', asset('smoke-cloud.png'));
       x$.audio('punch-sound', asset('sounds/punch.wav'));
@@ -25,6 +26,8 @@
       x$.audio('box-hit', asset('sounds/box-hit.wav'));
       x$.audio('box-break', asset('sounds/box-break.wav'));
       x$.audio('box-shoot', asset('sounds/bullet-shoot.wav'));
+      x$.audio('boom', asset('sounds/explosion.wav'));
+      x$.audio('beep', asset('sounds/beep.wav'));
       x$.audio('bgm', asset('bgm.ogg'));
       x$.spritesheet('basic-block', asset('blocks/basic.png'), 64, 64);
       x$.spritesheet('bullet-block', asset('blocks/bullet.png'), 64, 64);

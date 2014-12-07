@@ -19,6 +19,7 @@ class @Block extends Phaser.Sprite
     return if @dying
     @animations.frame += dmg or 1
     if @animations.frame >= @damage-frames
+      @animations.frame = @max-frame if @max-frame
       @dead! if @dead
       false
     else
