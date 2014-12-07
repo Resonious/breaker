@@ -3,6 +3,7 @@
   var TntBlock, slice$ = [].slice;
   this.TntBlock = TntBlock = (function(superclass){
     var prototype = extend$((import$(TntBlock, superclass).displayName = 'TntBlock', TntBlock), superclass).prototype, constructor = TntBlock;
+    TntBlock.rerollChance = 45;
     prototype.damageFrames = 3;
     prototype.scoreWorth = 2;
     prototype.playHitSoundOnDeath = true;

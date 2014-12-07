@@ -1,4 +1,6 @@
 class @TntBlock extends Block
+  @reroll-chance = 45
+
   damage-frames: 3
   score-worth: 2
   play-hit-sound-on-death: true

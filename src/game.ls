@@ -107,20 +107,26 @@ class @GameCore
         b2.on-block-collide(b1) if b2.on-block-collide
 
     const delta = @game.time.physics-elapsed
-    const rnd   = @game.rnd
     @block-timer -= delta
 
     if @block-timer <= 0
-      const possible-blocks = [BasicBlock, BulletBlock, TntBlock]
-      const block-index     = rnd.integer-in-range 0 possible-blocks.length - 1
-      const next-block-x    = rnd.integer-in-range 1, 800 / 64 - 2
-
-      @add-block possible-blocks[block-index], next-block-x * 64, 0
+      @generate-block(@game.rnd)
       @block-timer = @block-interval
       unless @block-timer <= 0.7
         @block-interval *= 0.85
       else if @block-interval > 0.5
         @block-interval -= 0.001
+
+  generate-block: (rnd) ->
+    const possible-blocks = [BasicBlock, BulletBlock, TntBlock]
+    const block-index     = rnd.integer-in-range 0 possible-blocks.length - 1
+    const next-block-x    = rnd.integer-in-range 1, 800 / 64 - 2
+    block = possible-blocks[block-index]
+    if block.reroll-chance
+      const chance = rnd.integer-in-range 0 100
+      return @generate-block(rnd) if chance < block.reroll-chance
+
+    @add-block possible-blocks[block-index], next-block-x * 64, 0
 
   render: !->
     # @player.debug-fist-positions!

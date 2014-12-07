@@ -90,7 +90,7 @@
       });
     };
     prototype.update = function(){
-      var x$, y$, delta, rnd, possibleBlocks, blockIndex, nextBlockX;
+      var x$, y$, delta;
       if (!this.player.dying) {
         x$ = this.game.physics.arcade;
         x$.collide(this.player, this.layer);
@@ -114,13 +114,9 @@
         }
       });
       delta = this.game.time.physicsElapsed;
-      rnd = this.game.rnd;
       this.blockTimer -= delta;
       if (this.blockTimer <= 0) {
-        possibleBlocks = [BasicBlock, BulletBlock, TntBlock];
-        blockIndex = rnd.integerInRange(0, possibleBlocks.length - 1);
-        nextBlockX = rnd.integerInRange(1, 800 / 64 - 2);
-        this.addBlock(possibleBlocks[blockIndex], nextBlockX * 64, 0);
+        this.generateBlock(this.game.rnd);
         this.blockTimer = this.blockInterval;
         if (!(this.blockTimer <= 0.7)) {
           this.blockInterval *= 0.85;
@@ -128,6 +124,20 @@
           this.blockInterval -= 0.001;
         }
       }
+    };
+    prototype.generateBlock = function(rnd){
+      var possibleBlocks, blockIndex, nextBlockX, block, chance;
+      possibleBlocks = [BasicBlock, BulletBlock, TntBlock];
+      blockIndex = rnd.integerInRange(0, possibleBlocks.length - 1);
+      nextBlockX = rnd.integerInRange(1, 800 / 64 - 2);
+      block = possibleBlocks[blockIndex];
+      if (block.rerollChance) {
+        chance = rnd.integerInRange(0, 100);
+        if (chance < block.rerollChance) {
+          return this.generateBlock(rnd);
+        }
+      }
+      return this.addBlock(possibleBlocks[blockIndex], nextBlockX * 64, 0);
     };
     prototype.render = function(){};
     return GameCore;
