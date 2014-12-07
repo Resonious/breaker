@@ -53,10 +53,6 @@
       x$.gravity.y = 2000;
       x$.collideWorldBounds = false;
       x$.setSize(this.hitboxWidth, this.hitboxHeight);
-      this.checkWorldBounds = true;
-      this.events.onOutOfBounds.add(function(){
-        return this.die(true);
-      }, this);
       this.punchSound = this.game.add.audio('punch-sound');
       this.chargeDown = this.game.add.audio('charge-down');
       y$ = this.fist = game.add.sprite(0, 0);
@@ -219,6 +215,9 @@
       if (this.specialKey.downDuration(10) && this.powerUp && !this.powerUp.inUse) {
         this.powerUp.use(this);
         this.powerUp.inUse = true;
+      }
+      if (this.y > 1200) {
+        this.die(true);
       }
     };
     prototype.spinning = function(){

@@ -10,6 +10,7 @@ class @GameCore
       ..spritesheet 'breaker'     (asset 'breaker.png'), 64 64
       ..image       'basic-tile'  asset 'better-basic-tile.png'
       ..image       'bg'          asset 'bg.png'
+      ..image       'block-hole'  asset 'block-hole.png'
       ..spritesheet 'stars'       (asset 'stars.png'), 8 8
       ..spritesheet 'explosion'   (asset 'explosion.png'), 192 192
       ..spritesheet 'power-up'    (asset 'power-up.png'), 32 32
@@ -29,6 +30,7 @@ class @GameCore
       ..audio       'blast-off'   asset 'sounds/blast-off.wav'
       ..audio       'steel-hit'   asset 'sounds/steel-hit.wav'
       ..audio       'steel-break' asset 'sounds/steel-break.wav'
+      ..audio       'bh-sound'    asset 'sounds/block-hole-sound.ogg'
 
       ..audio 'bgm' asset 'bgm.ogg'
 
@@ -45,6 +47,7 @@ class @GameCore
          camera  = @game.camera)
 
       @death-sound = add.audio 'dead-sound'
+      @block-hole-sound = add.audio 'bh-sound'
       @bgm = add.audio 'bgm'
         ..play '' 0 1 true
 
@@ -79,6 +82,9 @@ class @GameCore
         ..special-key = @special-key
         ..initialize-smoke!
 
+      @spawned-block-hole = false
+      @block-hole-timer   = 0.0
+      @block-hole-score   = 50
       @blocks    = add.group!
       @power-ups = add.group!
       @block-interval = 2
@@ -94,9 +100,22 @@ class @GameCore
       @game.input.keyboard.add-key Phaser.Keyboard.D
         ..on-down.add ~>
           @add-power-up PowerUp, 400, 450
+          @spawn-block-hole!
 
   score: ->
     @score-text.text = "Score: #{@player.score}"
+    if @player.score >= @block-hole-score and not @spawned-block-hole
+      @spawn-block-hole!
+
+  spawn-block-hole: ->
+    @block-hole-sound.play '' 0 0.5 false
+    @block-hole-timer = 10.0
+    @block-hole = @game.add.sprite 400, 200, 'block-hole'
+      ..anchor.set-to 0.5 0.5
+      ..x = 100
+      ..y = 350
+      ..update = -> @rotation += 6 * @game.time.physics-elapsed
+    @spawned-block-hole = true
 
   add-power-up: (type, x, y) ->
     @power-ups.add new type(@game, this, x, y)
@@ -148,6 +167,27 @@ class @GameCore
         @block-interval *= 0.85
       else if @block-interval > 0.5
         @block-interval -= 0.001
+
+    if @block-hole-timer > 0
+      @block-hole-timer -= delta
+      @block-hole.x += 50 * delta
+      @blocks.for-each (block) ~>
+        const y-dist = @block-hole.y - block.y
+        const x-dist = @block-hole.x - block.x
+        const dist = Math.sqrt(x-dist^2 + y-dist^2)
+        angle = Math.atan2 y-dist, x-dist
+        angle += 1
+
+        block.body.velocity.y = dist * 2 * Math.sin(angle)
+        block.body.velocity.x = dist * 2 * Math.cos(angle)
+    else if @block-hole
+      # @blocks.for-each (block) ~>
+      #  block.body.gravity.y = block.gravity
+      @block-hole.destroy!
+      @block-hole = undefined
+      @spawned-block-hole = false
+      @block-hole-score = @player.score + 60
+
 
   generate-block: (rnd, use-this-one) ->
     const possible-blocks = [BasicBlock, BulletBlock, TntBlock, SteelBlock]

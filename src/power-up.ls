@@ -66,7 +66,7 @@ class @PowerUp extends Phaser.Sprite
         ..gravity.y = gravity-y
         ..velocity
           ..x = velocity-x
-          ..y = -900
+          ..y = -1200
       @blast-off.play '' 0 1 false
       @charging-up = false
 

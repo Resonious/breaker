@@ -98,6 +98,9 @@
       } else {
         this.body.gravity.y = this.gravity;
       }
+      if (this.y > 1200) {
+        this.exist = false;
+      }
     };
     return Block;
   }(Phaser.Sprite));

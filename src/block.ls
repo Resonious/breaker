@@ -76,6 +76,9 @@ class @Block extends Phaser.Sprite
     else
       @body.gravity.y = @gravity
 
+    if @y > 1200
+      @exist = false
+
 class @BasicBlock extends Block
   damage-frames: 3
   score-worth: 1

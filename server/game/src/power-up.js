@@ -77,7 +77,7 @@
         x$.gravity.y = gravityY;
         y$ = x$.velocity;
         y$.x = velocityX;
-        y$.y = -900;
+        y$.y = -1200;
         this.blastOff.play('', 0, 1, false);
         return this.chargingUp = false;
       };

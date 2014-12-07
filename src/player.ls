@@ -48,8 +48,8 @@ class @Player extends Phaser.Sprite
       ..collide-world-bounds = false
       ..set-size @hitbox-width, @hitbox-height
 
-    @check-world-bounds = true
-    @events.on-out-of-bounds.add (-> @die true), this
+    # @check-world-bounds = true
+    # @events.on-out-of-bounds.add (-> @die true), this
 
     @punch-sound = @game.add.audio 'punch-sound'
     @charge-down = @game.add.audio 'charge-down'
@@ -205,6 +205,9 @@ class @Player extends Phaser.Sprite
     if @special-key.down-duration(10) and @power-up and not @power-up.in-use
       @power-up.use(this)
       @power-up.in-use = true
+
+    # ============== DIE WHEN JUMPED OUT WINDOW ========
+    @die(true) if @y > 1200
 
   spinning: -> @spinning-timer > 0
 

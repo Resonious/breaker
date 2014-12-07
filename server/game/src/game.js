@@ -17,6 +17,7 @@
       x$.spritesheet('breaker', asset('breaker.png'), 64, 64);
       x$.image('basic-tile', asset('better-basic-tile.png'));
       x$.image('bg', asset('bg.png'));
+      x$.image('block-hole', asset('block-hole.png'));
       x$.spritesheet('stars', asset('stars.png'), 8, 8);
       x$.spritesheet('explosion', asset('explosion.png'), 192, 192);
       x$.spritesheet('power-up', asset('power-up.png'), 32, 32);
@@ -36,6 +37,7 @@
       x$.audio('blast-off', asset('sounds/blast-off.wav'));
       x$.audio('steel-hit', asset('sounds/steel-hit.wav'));
       x$.audio('steel-break', asset('sounds/steel-break.wav'));
+      x$.audio('bh-sound', asset('sounds/block-hole-sound.ogg'));
       x$.audio('bgm', asset('bgm.ogg'));
       x$.spritesheet('basic-block', asset('blocks/basic.png'), 64, 64);
       x$.spritesheet('bullet-block', asset('blocks/bullet.png'), 64, 64);
@@ -47,6 +49,7 @@
       (function(add, physics, world, camera){
         var x$, y$, z$, map, z1$, z2$, z3$, this$ = this;
         this.deathSound = add.audio('dead-sound');
+        this.blockHoleSound = add.audio('bh-sound');
         x$ = this.bgm = add.audio('bgm');
         x$.play('', 0, 1, true);
         this.game.stage.backgroundColor = '#1B03E38';
@@ -75,6 +78,9 @@
         z2$.punchKey = this.punchKey;
         z2$.specialKey = this.specialKey;
         z2$.initializeSmoke();
+        this.spawnedBlockHole = false;
+        this.blockHoleTimer = 0.0;
+        this.blockHoleScore = 50;
         this.blocks = add.group();
         this.powerUps = add.group();
         this.blockInterval = 2;
@@ -87,12 +93,29 @@
         });
         z3$ = this.game.input.keyboard.addKey(Phaser.Keyboard.D);
         z3$.onDown.add(function(){
-          return this$.addPowerUp(PowerUp, 400, 450);
+          this$.addPowerUp(PowerUp, 400, 450);
+          return this$.spawnBlockHole();
         });
       }.call(this, this.game.add, this.game.physics, this.game.world, this.game.camera));
     };
     prototype.score = function(){
-      return this.scoreText.text = "Score: " + this.player.score;
+      this.scoreText.text = "Score: " + this.player.score;
+      if (this.player.score >= this.blockHoleScore && !this.spawnedBlockHole) {
+        return this.spawnBlockHole();
+      }
+    };
+    prototype.spawnBlockHole = function(){
+      var x$;
+      this.blockHoleSound.play('', 0, 0.5, false);
+      this.blockHoleTimer = 10.0;
+      x$ = this.blockHole = this.game.add.sprite(400, 200, 'block-hole');
+      x$.anchor.setTo(0.5, 0.5);
+      x$.x = 100;
+      x$.y = 350;
+      x$.update = function(){
+        return this.rotation += 6 * this.game.time.physicsElapsed;
+      };
+      return this.spawnedBlockHole = true;
     };
     prototype.addPowerUp = function(type, x, y){
       return this.powerUps.add(new type(this.game, this, x, y));
@@ -111,7 +134,7 @@
       });
     };
     prototype.update = function(){
-      var plrBlkCollide, x$, y$, delta, chest;
+      var plrBlkCollide, x$, y$, delta, chest, this$ = this;
       if (!this.player.dying) {
         plrBlkCollide = function(plr, blck){
           if (blck.onCollide) {
@@ -158,6 +181,25 @@
         } else if (this.blockInterval > 0.5) {
           this.blockInterval -= 0.001;
         }
+      }
+      if (this.blockHoleTimer > 0) {
+        this.blockHoleTimer -= delta;
+        this.blockHole.x += 50 * delta;
+        this.blocks.forEach(function(block){
+          var yDist, xDist, dist, angle;
+          yDist = this$.blockHole.y - block.y;
+          xDist = this$.blockHole.x - block.x;
+          dist = Math.sqrt(Math.pow(xDist, 2) + Math.pow(yDist, 2));
+          angle = Math.atan2(yDist, xDist);
+          angle += 1;
+          block.body.velocity.y = dist * 2 * Math.sin(angle);
+          return block.body.velocity.x = dist * 2 * Math.cos(angle);
+        });
+      } else if (this.blockHole) {
+        this.blockHole.destroy();
+        this.blockHole = undefined;
+        this.spawnedBlockHole = false;
+        this.blockHoleScore = this.player.score + 60;
       }
     };
     prototype.generateBlock = function(rnd, useThisOne){

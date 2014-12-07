@@ -11,7 +11,7 @@
       this$.anchor.setTo(0.5, 0.5);
       x$ = this$.body;
       x$.setSize(16, 16);
-      x$.velocity.x = 500 * direction;
+      x$.velocity.x = 300 * direction;
       this$.checkWorldBounds = true;
       this$.events.onOutOfBounds.add(this$.dead, this$);
       this$.animations.frame = 7;

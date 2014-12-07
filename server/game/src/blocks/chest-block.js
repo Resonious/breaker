@@ -4,7 +4,7 @@
   this.ChestBlock = ChestBlock = (function(superclass){
     var prototype = extend$((import$(ChestBlock, superclass).displayName = 'ChestBlock', ChestBlock), superclass).prototype, constructor = ChestBlock;
     prototype.damageFrames = 4;
-    prototype.scoreWorth = 50;
+    prototype.scoreWorth = 5;
     function ChestBlock(){
       var args, this$ = this instanceof ctor$ ? this : new ctor$;
       args = slice$.call(arguments);

@@ -8,7 +8,7 @@ class Bullet extends Phaser.Sprite
     @anchor.set-to 0.5 0.5
     @body
       ..set-size 16 16
-      ..velocity.x = 500 * direction
+      ..velocity.x = 300 * direction
 
     @check-world-bounds = true
     @events.on-out-of-bounds.add @dead, this
@@ -24,11 +24,9 @@ class Bullet extends Phaser.Sprite
     @dead!
 
   punched: (fist) ->
-    # TODO so play sound.
     @dead!
 
   dead: ->
-    # TODO play sound????
     @exists = false
 
 class @BulletBlock extends Block

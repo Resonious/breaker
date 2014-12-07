@@ -1,6 +1,6 @@
 class @ChestBlock extends Block
   damage-frames: 4
-  score-worth: 50
+  score-worth: 5
 
   (...args) ~>
     super 'chest-block', ...args
