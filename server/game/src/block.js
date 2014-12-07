@@ -4,7 +4,7 @@
   this.Block = Block = (function(superclass){
     var prototype = extend$((import$(Block, superclass).displayName = 'Block', Block), superclass).prototype, constructor = Block;
     prototype.isBlock = true;
-    prototype.gravity = 700;
+    prototype.gravity = 500;
     function Block(spritesheet, game, core, x, y){
       var x$, this$ = this instanceof ctor$ ? this : new ctor$;
       Block.superclass.call(this$, game, x, y, spritesheet);
@@ -128,7 +128,7 @@
       SteelBlock.superclass.apply(this$, ['steel-block'].concat(slice$.call(args)));
       this$.hitSound = this$.game.add.audio('steel-hit');
       this$.breakSound = this$.game.add.audio('steel-break');
-      this$.emitter = this$.deathEmitter([3, 4, 5]);
+      this$.emitter = this$.deathEmitter([22, 23]);
       return this$;
     } function ctor$(){} ctor$.prototype = prototype;
     return SteelBlock;

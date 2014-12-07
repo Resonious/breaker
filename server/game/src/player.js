@@ -235,7 +235,7 @@
         if (left || right) {
           block.punched(this.fist);
         }
-        return block.hurtByRollTimer = 0.05;
+        return block.hurtByRollTimer = 0.1;
       } else if (this.body.touching.up && this.grounded() && block.body.velocity.y > 100) {
         if (!this.die()) {
           return block.body.velocity.y = -5;

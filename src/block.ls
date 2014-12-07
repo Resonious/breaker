@@ -1,6 +1,6 @@
 class @Block extends Phaser.Sprite
   is-block: true
-  gravity: 700
+  gravity: 500
 
   (spritesheet, game, core, x, y) ~>
     super game, x, y, spritesheet
@@ -97,4 +97,4 @@ class @SteelBlock extends Block
     super 'steel-block', ...args
     @hit-sound   = @game.add.audio 'steel-hit'
     @break-sound = @game.add.audio 'steel-break'
-    @emitter     = @death-emitter [3, 4, 5]
+    @emitter     = @death-emitter [22, 23]

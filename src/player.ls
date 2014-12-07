@@ -214,7 +214,7 @@ class @Player extends Phaser.Sprite
       const left  = @body.touching.left  && block.body.touching.right
       const right = @body.touching.right && block.body.touching.left
       block.punched(@fist) if left or right
-      block.hurt-by-roll-timer = 0.05
+      block.hurt-by-roll-timer = 0.1
     else if @body.touching.up && @grounded! && block.body.velocity.y > 100
       block.body.velocity.y = -5 unless @die!
 
