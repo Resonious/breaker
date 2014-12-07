@@ -17,6 +17,8 @@
       x$ = this.game.load;
       x$.spritesheet('breaker', asset('breaker.png'), 64, 64);
       x$.image('basic-tile', asset('better-basic-tile.png'));
+      x$.image('bg', asset('bg.png'));
+      x$.spritesheet('stars', asset('stars.png'), 8, 8);
       x$.tilemap('map', asset('map/basic-map.json'), null, Phaser.Tilemap.TILED_JSON);
       x$.image('smoke', asset('smoke-cloud.png'));
       x$.audio('punch-sound', asset('sounds/punch.wav'));
@@ -30,34 +32,42 @@
     };
     prototype.create = function(){
       (function(add, physics, world, camera){
-        var x$, y$, map, z$, z1$, z2$, this$ = this;
+        var x$, y$, z$, map, z1$, z2$, z3$, this$ = this;
         this.deathSound = add.audio('dead-sound');
         x$ = this.bgm = add.audio('bgm');
         x$.play('', 0, 1, true);
-        this.game.stage.backgroundColor = '#FFFFFF';
+        this.game.stage.backgroundColor = '#1B03E38';
+        y$ = add.emitter(this.game.world.centerX, 200, 200);
+        y$.width = 800;
+        y$.makeParticles('stars');
+        y$.minParticleSpeed.set(0, 0);
+        y$.maxParticleSpeed.set(0, 400);
+        y$.y = 0;
+        y$.start(false, 3000, 80);
+        add.image(0, 0, 'bg');
         this.game.time.advancedTiming = true;
         physics.startSystem(Phaser.Physics.Arcade);
         physics.arcade.TILE_BIAS = 32;
         physics.arcade.OVERLAP_BIAS = 32;
-        y$ = map = add.tilemap('map');
-        y$.addTilesetImage('basic', 'basic-tile');
-        y$.setCollision(1);
-        z$ = this.layer = map.createLayer('Tile Layer 1');
-        z$.resizeWorld();
+        z$ = map = add.tilemap('map');
+        z$.addTilesetImage('basic', 'basic-tile');
+        z$.setCollision(1);
+        z1$ = this.layer = map.createLayer('Tile Layer 1');
+        z1$.resizeWorld();
         this.arrowKeys = this.game.input.keyboard.createCursorKeys();
         this.punchKey = this.game.input.keyboard.addKey(Phaser.Keyboard.Z);
-        z1$ = this.player = add.existing(new Player(this.game, this, 400, 500));
-        z1$.keys = this.arrowKeys;
-        z1$.punchKey = this.punchKey;
-        z1$.initializeSmoke();
+        z2$ = this.player = add.existing(new Player(this.game, this, 400, 500));
+        z2$.keys = this.arrowKeys;
+        z2$.punchKey = this.punchKey;
+        z2$.initializeSmoke();
         this.blocks = add.group();
         this.scoreText = add.text(40, 5, 'Score: 0', {
           font: '24px Arial',
           fill: '#000000',
           align: 'center'
         });
-        z2$ = this.game.input.keyboard.addKey(Phaser.Keyboard.D);
-        z2$.onDown.add(function(){
+        z3$ = this.game.input.keyboard.addKey(Phaser.Keyboard.D);
+        z3$.onDown.add(function(){
           return this$.addBlock(BasicBlock, 300, 0);
         });
       }.call(this, this.game.add, this.game.physics, this.game.world, this.game.camera));

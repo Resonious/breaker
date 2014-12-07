@@ -11,6 +11,8 @@ class @GameCore
     @game.load
       ..spritesheet 'breaker'     (asset 'breaker.png'), 64 64
       ..image       'basic-tile'  asset 'better-basic-tile.png'
+      ..image       'bg'          asset 'bg.png'
+      ..spritesheet 'stars'       (asset 'stars.png'), 8 8
       ..tilemap     'map',        (asset 'map/basic-map.json'), null, Phaser.Tilemap.TILED_JSON
       ..image       'smoke'       asset 'smoke-cloud.png'
       ..audio       'punch-sound' asset 'sounds/punch.wav'
@@ -34,7 +36,15 @@ class @GameCore
       @bgm = add.audio 'bgm'
         ..play '' 0 1 true
 
-      @game.stage.background-color = '#FFFFFF'
+      @game.stage.background-color = '#1B03E38'
+      add.emitter @game.world.center-x, 200, 200
+        ..width = 800
+        ..make-particles 'stars'
+        ..min-particle-speed.set 0 0
+        ..max-particle-speed.set 0 400
+        ..y = 0
+        ..start false 3000 80
+      add.image 0 0 'bg'
       @game.time.advancedTiming    = true
 
       physics.start-system Phaser.Physics.Arcade
