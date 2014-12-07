@@ -23,6 +23,7 @@
       x$.audio('dead-sound', asset('sounds/dead.ogg'));
       x$.audio('box-hit', asset('sounds/box-hit.wav'));
       x$.audio('box-break', asset('sounds/box-break.wav'));
+      x$.audio('box-shoot', asset('sounds/bullet-shoot.wav'));
       x$.audio('bgm', asset('bgm.ogg'));
       x$.spritesheet('basic-block', asset('blocks/basic.png'), 64, 64);
       x$.spritesheet('bullet-block', asset('blocks/bullet.png'), 64, 64);
@@ -37,7 +38,7 @@
         this.game.time.advancedTiming = true;
         physics.startSystem(Phaser.Physics.Arcade);
         physics.arcade.TILE_BIAS = 32;
-        physics.arcade.OVERLAP_BIAS = 12;
+        physics.arcade.OVERLAP_BIAS = 32;
         y$ = map = add.tilemap('map');
         y$.addTilesetImage('basic', 'basic-tile');
         y$.setCollision(1);

@@ -17,6 +17,7 @@ class @GameCore
       ..audio       'dead-sound'  asset 'sounds/dead.ogg'
       ..audio       'box-hit'     asset 'sounds/box-hit.wav'
       ..audio       'box-break'   asset 'sounds/box-break.wav'
+      ..audio       'box-shoot'   asset 'sounds/bullet-shoot.wav'
 
       ..audio 'bgm' asset 'bgm.ogg'
 
@@ -37,8 +38,8 @@ class @GameCore
       @game.time.advancedTiming    = true
 
       physics.start-system Phaser.Physics.Arcade
-      physics.arcade.TILE_BIAS = 32
-      physics.arcade.OVERLAP_BIAS = 12
+      physics.arcade.TILE_BIAS    = 32
+      physics.arcade.OVERLAP_BIAS = 32
 
       map = add.tilemap 'map'
         ..add-tileset-image 'basic', 'basic-tile'

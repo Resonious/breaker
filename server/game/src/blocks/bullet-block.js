@@ -39,27 +39,27 @@
     prototype.scoreWorth = 2;
     prototype.bulletTimer = 5.0;
     function BulletBlock(){
-      var args, scales, x$, this$ = this instanceof ctor$ ? this : new ctor$;
+      var args, x$, scales, this$ = this instanceof ctor$ ? this : new ctor$;
       args = slice$.call(arguments);
       BulletBlock.superclass.apply(this$, ['bullet-block'].concat(slice$.call(args)));
       this$.hitSound = this$.game.add.audio('box-hit');
       this$.breakSound = this$.game.add.audio('box-break');
       this$.emitter = this$.deathEmitter([5, 6]);
-      scales = [-1, 1];
-      this$.scale.x = scales[this$.game.rnd.integerInRange(0, 1)];
       x$ = this$.laserEye = this$.addChild(new Phaser.Sprite(this$.game, 0, 0, 'bullet-block'));
       x$.anchor.setTo(0.5, 0.5);
       x$.x = 0;
       x$.y = 0;
       x$.animations.frame = 8;
       x$.alpha = 0;
-      x$.scale.x = this$.scale.x;
+      scales = [-1, 1];
+      this$.scale.x = scales[this$.game.rnd.integerInRange(0, 1)];
+      this$.shootSound = this$.game.add.audio('box-shoot');
       return this$;
     } function ctor$(){} ctor$.prototype = prototype;
     prototype.bullet = function(){
       var x, y;
-      x = this.x + this.width - 16;
-      y = this.y + this.height / 8;
+      x = this.x + 16 * this.scale.x;
+      y = this.y;
       return new Bullet(this.game, x, y, this.scale.x);
     };
     prototype.update = function(){
@@ -69,6 +69,7 @@
       this.bulletTimer -= delta;
       this.laserEye.alpha = 1 - this.bulletTimer / 5.5;
       if (this.bulletTimer <= 0) {
+        this.shootSound.play('', 0, 1, false);
         this.core.blocks.add(this.bullet());
         this.bulletTimer = 5.5;
       }

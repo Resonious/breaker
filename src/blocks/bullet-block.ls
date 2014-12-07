@@ -42,9 +42,6 @@ class @BulletBlock extends Block
     @hit-sound   = @game.add.audio 'box-hit'
     @break-sound = @game.add.audio 'box-break'
     @emitter     = @death-emitter [5, 6]
-    const scales = [-1, 1]
-    @scale.x = scales[@game.rnd.integer-in-range 0 1]
-
     @laser-eye = @add-child new Phaser.Sprite(
       @game, 0, 0, 'bullet-block')
       ..anchor.set-to 0.5 0.5
@@ -52,11 +49,14 @@ class @BulletBlock extends Block
       ..y = 0
       ..animations.frame = 8
       ..alpha = 0
-      ..scale.x = @scale.x
+
+    const scales = [-1, 1]
+    @scale.x = scales[@game.rnd.integer-in-range 0 1]
+    @shoot-sound = @game.add.audio 'box-shoot'
 
   bullet: ->
-    const x = @x + @width - 16
-    const y = @y + @height / 8
+    const x = @x + 16 * @scale.x
+    const y = @y
 
     new Bullet(@game, x, y, @scale.x)
 
@@ -65,6 +65,8 @@ class @BulletBlock extends Block
     const delta = @game.time.physics-elapsed
     @bullet-timer -= delta
     @laser-eye.alpha = 1 - @bullet-timer / 5.5
+
     if @bullet-timer <= 0
+      @shoot-sound.play '' 0 1 false
       @core.blocks.add @bullet!
       @bullet-timer = 5.5
