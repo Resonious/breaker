@@ -34,11 +34,14 @@
       x$.audio('charge-up', asset('sounds/charge-up.wav'));
       x$.audio('charge-down', asset('sounds/charge-down.wav'));
       x$.audio('blast-off', asset('sounds/blast-off.wav'));
+      x$.audio('steel-hit', asset('sounds/steel-hit.wav'));
+      x$.audio('steel-break', asset('sounds/steel-break.wav'));
       x$.audio('bgm', asset('bgm.ogg'));
       x$.spritesheet('basic-block', asset('blocks/basic.png'), 64, 64);
       x$.spritesheet('bullet-block', asset('blocks/bullet.png'), 64, 64);
       x$.spritesheet('tnt-block', asset('blocks/tnt.png'), 64, 64);
       x$.spritesheet('chest-block', asset('blocks/chest.png'), 64, 64);
+      x$.spritesheet('steel-block', asset('blocks/steel.png'), 64, 64);
     };
     prototype.create = function(){
       (function(add, physics, world, camera){
@@ -159,7 +162,7 @@
     };
     prototype.generateBlock = function(rnd, useThisOne){
       var possibleBlocks, blockIndex, nextBlockX, block, chance;
-      possibleBlocks = [BasicBlock, BulletBlock, TntBlock];
+      possibleBlocks = [BasicBlock, BulletBlock, TntBlock, SteelBlock];
       blockIndex = rnd.integerInRange(0, possibleBlocks.length - 1);
       nextBlockX = rnd.integerInRange(1, 800 / 64 - 2);
       block = useThisOne || possibleBlocks[blockIndex];

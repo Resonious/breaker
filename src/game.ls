@@ -36,6 +36,7 @@ class @GameCore
       ..spritesheet 'bullet-block' (asset 'blocks/bullet.png'), 64 64
       ..spritesheet 'tnt-block'    (asset 'blocks/tnt.png')   , 64 64
       ..spritesheet 'chest-block'  (asset 'blocks/chest.png') , 64 64
+      ..spritesheet 'steel-block'  (asset 'blocks/steel.png') , 64 64
 
   create: !->
     let (add     = @game.add,
@@ -149,7 +150,7 @@ class @GameCore
         @block-interval -= 0.001
 
   generate-block: (rnd, use-this-one) ->
-    const possible-blocks = [BasicBlock, BulletBlock, TntBlock]
+    const possible-blocks = [BasicBlock, BulletBlock, TntBlock, SteelBlock]
     const block-index     = rnd.integer-in-range 0 possible-blocks.length - 1
     const next-block-x    = rnd.integer-in-range 1, 800 / 64 - 2
     block = use-this-one or possible-blocks[block-index]
