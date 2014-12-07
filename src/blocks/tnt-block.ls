@@ -1,5 +1,5 @@
 class @TntBlock extends Block
-  @reroll-chance = 45
+  @reroll-chance = 75
 
   damage-frames: 3
   score-worth: 2

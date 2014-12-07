@@ -19,6 +19,8 @@ class @GameCore
       ..audio       'box-hit'     asset 'sounds/box-hit.wav'
       ..audio       'box-break'   asset 'sounds/box-break.wav'
       ..audio       'box-shoot'   asset 'sounds/bullet-shoot.wav'
+      ..audio       'chest-hit'   asset 'sounds/chest-hit.wav'
+      ..audio       'chest-break' asset 'sounds/chest-break.wav'
       ..audio       'boom'        asset 'sounds/explosion.wav'
       ..audio       'beep'        asset 'sounds/beep.wav'
 
@@ -27,6 +29,7 @@ class @GameCore
       ..spritesheet 'basic-block'  (asset 'blocks/basic.png') , 64 64
       ..spritesheet 'bullet-block' (asset 'blocks/bullet.png'), 64 64
       ..spritesheet 'tnt-block'    (asset 'blocks/tnt.png')   , 64 64
+      ..spritesheet 'chest-block'  (asset 'blocks/chest.png')  , 64 64
 
   create: !->
     let (add     = @game.add,
@@ -77,8 +80,8 @@ class @GameCore
         align: 'center'
 
       # DEBUG KEY BEHAVIOR
-      # @game.input.keyboard.add-key Phaser.Keyboard.D
-        # ..on-down.add ~> @add-block(BasicBlock, 300, 0)
+      @game.input.keyboard.add-key Phaser.Keyboard.D
+        ..on-down.add ~> @d-chest = @add-block(ChestBlock, 300, 0)
 
   score: ->
     @score-text.text = "Score: #{@player.score}"
@@ -86,6 +89,7 @@ class @GameCore
   add-block: (type, x, y) ->
     @blocks.add type(@game, this, x, y)
 
+  # Called by Player
   punch: (fist) !->
     @game.physics.arcade
       ..collide fist, @blocks, null, (_, block) ->
@@ -102,7 +106,8 @@ class @GameCore
           plr.on-collide(blck)
 
     @game.physics.arcade
-      ..collide @blocks, @layer, null, (b, l) -> b.is-block
+      ..collide @blocks, @layer, null, (b, l) ->
+        if b.test-layer-collision then b.test-layer-collision(l) else b.is-block
       ..collide @blocks, @blocks, (b1, b2) ->
         b1.on-block-collide(b2) if b1.on-block-collide
         b2.on-block-collide(b1) if b2.on-block-collide
@@ -130,5 +135,6 @@ class @GameCore
     @add-block possible-blocks[block-index], next-block-x * 64, 0
 
   render: !->
+    @game.debug.text "chest health: #{@d-chest.health}" 200 200 if @d-chest
     # @player.debug-fist-positions!
     # @game.debug.body @player

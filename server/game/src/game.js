@@ -26,16 +26,19 @@
       x$.audio('box-hit', asset('sounds/box-hit.wav'));
       x$.audio('box-break', asset('sounds/box-break.wav'));
       x$.audio('box-shoot', asset('sounds/bullet-shoot.wav'));
+      x$.audio('chest-hit', asset('sounds/chest-hit.wav'));
+      x$.audio('chest-break', asset('sounds/chest-break.wav'));
       x$.audio('boom', asset('sounds/explosion.wav'));
       x$.audio('beep', asset('sounds/beep.wav'));
       x$.audio('bgm', asset('bgm.ogg'));
       x$.spritesheet('basic-block', asset('blocks/basic.png'), 64, 64);
       x$.spritesheet('bullet-block', asset('blocks/bullet.png'), 64, 64);
       x$.spritesheet('tnt-block', asset('blocks/tnt.png'), 64, 64);
+      x$.spritesheet('chest-block', asset('blocks/chest.png'), 64, 64);
     };
     prototype.create = function(){
       (function(add, physics, world, camera){
-        var x$, y$, z$, map, z1$, z2$;
+        var x$, y$, z$, map, z1$, z2$, z3$, this$ = this;
         this.deathSound = add.audio('dead-sound');
         x$ = this.bgm = add.audio('bgm');
         x$.play('', 0, 1, true);
@@ -71,6 +74,10 @@
           fill: '#000000',
           align: 'center'
         });
+        z3$ = this.game.input.keyboard.addKey(Phaser.Keyboard.D);
+        z3$.onDown.add(function(){
+          return this$.dChest = this$.addBlock(ChestBlock, 300, 0);
+        });
       }.call(this, this.game.add, this.game.physics, this.game.world, this.game.camera));
     };
     prototype.score = function(){
@@ -103,7 +110,11 @@
       }
       y$ = this.game.physics.arcade;
       y$.collide(this.blocks, this.layer, null, function(b, l){
-        return b.isBlock;
+        if (b.testLayerCollision) {
+          return b.testLayerCollision(l);
+        } else {
+          return b.isBlock;
+        }
       });
       y$.collide(this.blocks, this.blocks, function(b1, b2){
         if (b1.onBlockCollide) {
@@ -139,7 +150,11 @@
       }
       return this.addBlock(possibleBlocks[blockIndex], nextBlockX * 64, 0);
     };
-    prototype.render = function(){};
+    prototype.render = function(){
+      if (this.dChest) {
+        this.game.debug.text("chest health: " + this.dChest.health, 200, 200);
+      }
+    };
     return GameCore;
   }());
 }).call(this);
