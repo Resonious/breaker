@@ -5,7 +5,6 @@
   this.GameCore = GameCore = (function(){
     GameCore.displayName = 'GameCore';
     var prototype = GameCore.prototype, constructor = GameCore;
-    prototype.blockTimer = 2.5;
     function GameCore(game){
       this.game = game;
     }
@@ -32,7 +31,7 @@
     };
     prototype.create = function(){
       (function(add, physics, world, camera){
-        var x$, y$, z$, map, z1$, z2$, z3$, this$ = this;
+        var x$, y$, z$, map, z1$, z2$;
         this.deathSound = add.audio('dead-sound');
         x$ = this.bgm = add.audio('bgm');
         x$.play('', 0, 1, true);
@@ -61,14 +60,12 @@
         z2$.punchKey = this.punchKey;
         z2$.initializeSmoke();
         this.blocks = add.group();
+        this.blockInterval = 2;
+        this.blockTimer = this.blockInterval;
         this.scoreText = add.text(40, 5, 'Score: 0', {
           font: '24px Arial',
           fill: '#000000',
           align: 'center'
-        });
-        z3$ = this.game.input.keyboard.addKey(Phaser.Keyboard.D);
-        z3$.onDown.add(function(){
-          return this$.addBlock(BasicBlock, 300, 0);
         });
       }.call(this, this.game.add, this.game.physics, this.game.world, this.game.camera));
     };
@@ -118,9 +115,12 @@
       if (this.blockTimer <= 0) {
         possibleBlocks = [BasicBlock, BulletBlock];
         blockIndex = rnd.integerInRange(0, possibleBlocks.length - 1);
-        nextBlockX = rnd.integerInRange(32, 800 - 32);
-        this.addBlock(possibleBlocks[blockIndex], nextBlockX, 0);
-        this.blockTimer = 1;
+        nextBlockX = rnd.integerInRange(1, 800 / 64 - 1);
+        this.addBlock(possibleBlocks[blockIndex], nextBlockX * 64, 0);
+        this.blockTimer = this.blockInterval;
+        if (!(this.blockInterval <= 0.7)) {
+          this.blockInterval *= 0.9;
+        }
       }
     };
     prototype.render = function(){};

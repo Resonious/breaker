@@ -1,8 +1,6 @@
 {each, all, map} = require 'prelude-ls'
 
 class @GameCore
-  block-timer: 2.5
-
   (game) !->
     @game = game
 
@@ -66,6 +64,8 @@ class @GameCore
         ..initialize-smoke!
 
       @blocks = add.group!
+      @block-interval = 2
+      @block-timer    = @block-interval
 
       @score-text = add.text 40 5 'Score: 0',
         font: '24px Arial'
@@ -73,8 +73,8 @@ class @GameCore
         align: 'center'
 
       # DEBUG KEY BEHAVIOR
-      @game.input.keyboard.add-key Phaser.Keyboard.D
-        ..on-down.add ~> @add-block(BasicBlock, 300, 0)
+      # @game.input.keyboard.add-key Phaser.Keyboard.D
+        # ..on-down.add ~> @add-block(BasicBlock, 300, 0)
 
   score: ->
     @score-text.text = "Score: #{@player.score}"
@@ -109,11 +109,11 @@ class @GameCore
     if @block-timer <= 0
       const possible-blocks = [BasicBlock, BulletBlock]
       const block-index     = rnd.integer-in-range 0 possible-blocks.length - 1
-      const next-block-x    = rnd.integer-in-range 32 800 - 32
+      const next-block-x    = rnd.integer-in-range 1, 800 / 64 - 1
 
-      @add-block possible-blocks[block-index], next-block-x, 0
-      # TODO function for more interesting block intervals
-      @block-timer = 1
+      @add-block possible-blocks[block-index], next-block-x * 64, 0
+      @block-timer = @block-interval
+      @block-interval *= 0.9 unless @block-interval <= 0.7
 
   render: !->
     # @player.debug-fist-positions!

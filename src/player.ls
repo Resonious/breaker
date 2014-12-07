@@ -182,7 +182,6 @@ class @Player extends Phaser.Sprite
 
   on-collide: (block) ->
     if @spinning!
-      # TODO this is kind of overpowered (maybe)
       const left  = @body.touching.left  && block.body.touching.right
       const right = @body.touching.right && block.body.touching.left
       block.punched(@fist) if left or right
