@@ -30,10 +30,10 @@ class @Block extends Phaser.Sprite
       ..make-particles @spritesheet, frames
       ..gravity = 200
 
-  punched: (fist) ->
+  punched: (fist, dmg) ->
     @body.velocity.x += 135 * -fist.player.direction if fist
     @body.velocity.y -= 100
-    if @take-damage!
+    if @take-damage(dmg)
       @hit-sound.play '' 0 1 false
     else
       @hit-sound.play '' 0 1 false if @play-hit-sound-on-death

@@ -17,7 +17,7 @@
     var prototype = extend$((import$(Player, superclass).displayName = 'Player', Player), superclass).prototype, constructor = Player;
     prototype.keys = null;
     prototype.punchKey = null;
-    prototype.direction = 0;
+    prototype.direction = 1;
     prototype.airTimer = 0.0;
     prototype.jumpWhileOffGroundTime = 0.1;
     prototype.jumpBoostFactor = 0.01;
@@ -36,6 +36,7 @@
     prototype.punchTimer = 0;
     prototype.punchDelay = 0;
     prototype.spinningTimer = 0.0;
+    prototype.spinCooldownTimer = 0.0;
     prototype.hitboxWidth = 36;
     prototype.hitboxHeight = 49;
     prototype.fistSize = 16;
@@ -96,6 +97,9 @@
         return;
       }
       axis = leftRightAxis(this.keys.left.isDown, this.keys.right.isDown);
+      if (this.dying) {
+        axis = 0;
+      }
       if (axis !== 0) {
         this.direction = -axis;
       }
@@ -110,25 +114,30 @@
       } else {
         this.body.gravity.y = 2000;
       }
-      this.doubleClickTimer.left -= delta;
-      this.doubleClickTimer.right -= delta;
-      each(function(it){
-        var key;
-        if (this$.doubleClickTimer[it] < 0) {
-          this$.doubleClickCounter[it] = 0;
-        }
-        key = this$.keys[it];
-        if (key.downDuration(10)) {
-          this$.doubleClickCounter[it] += 1;
-          this$.doubleClickTimer[it] = 0.25;
-          if (this$.doubleClickCounter[it] === 2) {
-            this$.body.velocity.x = 1200 * axis;
+      if (this.spinCooldownTimer > 0) {
+        this.spinCooldownTimer -= delta;
+      } else {
+        this.doubleClickTimer.left -= delta;
+        this.doubleClickTimer.right -= delta;
+        each(function(it){
+          var key;
+          if (this$.doubleClickTimer[it] < 0) {
             this$.doubleClickCounter[it] = 0;
-            return this$.spinningTimer = 0.3;
           }
-        }
-      })(
-      ['left', 'right']);
+          key = this$.keys[it];
+          if (key.downDuration(10)) {
+            this$.doubleClickCounter[it] += 1;
+            this$.doubleClickTimer[it] = 0.25;
+            if (this$.doubleClickCounter[it] === 2) {
+              this$.body.velocity.x = 1200 * axis;
+              this$.doubleClickCounter[it] = 0;
+              this$.spinningTimer = 0.3;
+              return this$.spinCooldownTimer = 0.2;
+            }
+          }
+        })(
+        ['left', 'right']);
+      }
       targetSpeed = this.punchDelay <= 0 ? 250 * axis : 0;
       towardsTargetBy = towards(this.body.velocity.x, targetSpeed);
       this.body.velocity.x = towardsTargetBy(3000 * delta);

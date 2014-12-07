@@ -10,7 +10,7 @@ class @Player extends Phaser.Sprite
   keys: null
   punch-key: null
 
-  direction: 0
+  direction: 1
 
   air-timer: 0.0
   jump-while-off-ground-time: 0.1
@@ -27,6 +27,7 @@ class @Player extends Phaser.Sprite
   punch-delay: 0
 
   spinning-timer: 0.0
+  spin-cooldown-timer: 0.0
 
   hitbox-width: 36
   hitbox-height: 49
@@ -89,6 +90,7 @@ class @Player extends Phaser.Sprite
     const delta = @game.time.physics-elapsed
     return if @keys is null
     axis = left-right-axis @keys.left.is-down, @keys.right.is-down
+    axis = 0 if @dying
     @direction = -axis if axis isnt 0
 
     # =========== AIR TIMING AND GROUND MANAGEMENT ===
@@ -104,24 +106,28 @@ class @Player extends Phaser.Sprite
       @body.gravity.y = 2000
 
     # =============== DODGE ROLL ===============
-    @double-click-timer.left  -= delta
-    @double-click-timer.right -= delta
+    if @spin-cooldown-timer > 0
+      @spin-cooldown-timer -= delta
+    else
+      @double-click-timer.left  -= delta
+      @double-click-timer.right -= delta
 
-    ['left', 'right'] |> each ~>
-      # Reset counter to 0 if time for doubleclick has run out
-      if @double-click-timer[it] < 0
-        @double-click-counter[it] = 0
-
-      const key = @keys[it]
-
-      if key.down-duration(10)
-        @double-click-counter[it] += 1
-        @double-click-timer[it]   = 0.25
-
-        if @double-click-counter[it] == 2
-          @body.velocity.x = 1200 * axis
+      ['left', 'right'] |> each ~>
+        # Reset counter to 0 if time for doubleclick has run out
+        if @double-click-timer[it] < 0
           @double-click-counter[it] = 0
-          @spinning-timer = 0.3
+
+        const key = @keys[it]
+
+        if key.down-duration(10)
+          @double-click-counter[it] += 1
+          @double-click-timer[it]   = 0.25
+
+          if @double-click-counter[it] == 2
+            @body.velocity.x = 1200 * axis
+            @double-click-counter[it] = 0
+            @spinning-timer = 0.3
+            @spin-cooldown-timer = 0.2
 
     # ================ MOVEMENT ================
     const target-speed = if @punch-delay <= 0 then 250 * axis else 0

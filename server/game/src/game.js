@@ -84,7 +84,7 @@
       x$ = this.game.physics.arcade;
       x$.collide(fist, this.blocks, null, function(_, block){
         if (block.punched) {
-          block.punched(fist);
+          block.punched(fist, fist.player.spinning() ? 2 : 1);
         }
         return false;
       });

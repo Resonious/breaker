@@ -43,12 +43,12 @@
       x$.gravity = 200;
       return x$;
     };
-    prototype.punched = function(fist){
+    prototype.punched = function(fist, dmg){
       if (fist) {
         this.body.velocity.x += 135 * -fist.player.direction;
       }
       this.body.velocity.y -= 100;
-      if (this.takeDamage()) {
+      if (this.takeDamage(dmg)) {
         return this.hitSound.play('', 0, 1, false);
       } else {
         if (this.playHitSoundOnDeath) {

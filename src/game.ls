@@ -89,7 +89,8 @@ class @GameCore
   punch: (fist) !->
     @game.physics.arcade
       ..collide fist, @blocks, null, (_, block) ->
-        block.punched(fist) if block.punched
+        if block.punched
+          block.punched(fist, if fist.player.spinning! then 2 else 1)
         false
 
   update: !->
