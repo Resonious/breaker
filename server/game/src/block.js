@@ -13,13 +13,16 @@
       game.physics.arcade.enable(this$);
       this$.anchor.setTo(0.5, 0.5);
       x$ = this$.body;
-      x$.bounce.y = 0.1;
+      x$.bounce.y = 0.0;
       x$.bounce.x = 0.3;
       x$.gravity.y = this$.gravity;
       x$.collideWorldBounds = false;
       return this$;
     } function ctor$(){} ctor$.prototype = prototype;
     prototype.takeDamage = function(dmg){
+      if (this.dying) {
+        return;
+      }
       this.animations.frame += dmg || 1;
       if (this.animations.frame >= this.damageFrames) {
         if (this.dead) {
@@ -45,6 +48,9 @@
       if (this.takeDamage()) {
         return this.hitSound.play('', 0, 1, false);
       } else {
+        if (this.playHitSoundOnDeath) {
+          this.hitSound.play('', 0, 1, false);
+        }
         if (fist) {
           fist.player.score += this.scoreWorth;
         }
@@ -69,7 +75,9 @@
       return this.breakSound.play('', 0, 1, false);
     };
     prototype.die = function(){
-      this.emitter.destroy();
+      if (this.emitter) {
+        this.emitter.destroy();
+      }
       return this.destroy();
     };
     prototype.update = function(){

@@ -105,6 +105,11 @@
       } else {
         this.airTimer += delta;
       }
+      if (this.body.touching.down) {
+        this.body.gravity.y = 100;
+      } else {
+        this.body.gravity.y = 2000;
+      }
       this.doubleClickTimer.left -= delta;
       this.doubleClickTimer.right -= delta;
       each(function(it){

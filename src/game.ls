@@ -21,8 +21,9 @@ class @GameCore
 
       ..audio 'bgm' asset 'bgm.ogg'
 
-      ..spritesheet 'basic-block' (asset 'blocks/basic.png'), 64 64
+      ..spritesheet 'basic-block'  (asset 'blocks/basic.png') , 64 64
       ..spritesheet 'bullet-block' (asset 'blocks/bullet.png'), 64 64
+      ..spritesheet 'tnt-block'    (asset 'blocks/tnt.png')   , 64 64
 
   create: !->
     let (add     = @game.add,
@@ -107,13 +108,13 @@ class @GameCore
     @block-timer -= delta
 
     if @block-timer <= 0
-      const possible-blocks = [BasicBlock, BulletBlock]
+      const possible-blocks = [BasicBlock, BulletBlock, TntBlock]
       const block-index     = rnd.integer-in-range 0 possible-blocks.length - 1
-      const next-block-x    = rnd.integer-in-range 1, 800 / 64 - 1
+      const next-block-x    = rnd.integer-in-range 1, 800 / 64 - 2
 
       @add-block possible-blocks[block-index], next-block-x * 64, 0
       @block-timer = @block-interval
-      @block-interval *= 0.9 unless @block-interval <= 0.7
+      @block-interval *= 0.85 unless @block-interval <= 0.7
 
   render: !->
     # @player.debug-fist-positions!

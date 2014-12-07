@@ -10,12 +10,13 @@ class @Block extends Phaser.Sprite
     game.physics.arcade.enable this
     @anchor.set-to 0.5 0.5
     @body
-      ..bounce.y = 0.1
+      ..bounce.y = 0.0
       ..bounce.x = 0.3
       ..gravity.y = @gravity
       ..collide-world-bounds = false
 
   take-damage: (dmg) ->
+    return if @dying
     @animations.frame += dmg or 1
     if @animations.frame >= @damage-frames
       @dead! if @dead
@@ -34,6 +35,7 @@ class @Block extends Phaser.Sprite
     if @take-damage!
       @hit-sound.play '' 0 1 false
     else
+      @hit-sound.play '' 0 1 false if @play-hit-sound-on-death
       fist.player.score += @score-worth if fist
       @core.score!
 
@@ -53,7 +55,7 @@ class @Block extends Phaser.Sprite
     @break-sound.play '' 0 1 false
 
   die: ->
-    @emitter.destroy!
+    @emitter.destroy! if @emitter
     @destroy!
 
   update: !->

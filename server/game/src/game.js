@@ -28,6 +28,7 @@
       x$.audio('bgm', asset('bgm.ogg'));
       x$.spritesheet('basic-block', asset('blocks/basic.png'), 64, 64);
       x$.spritesheet('bullet-block', asset('blocks/bullet.png'), 64, 64);
+      x$.spritesheet('tnt-block', asset('blocks/tnt.png'), 64, 64);
     };
     prototype.create = function(){
       (function(add, physics, world, camera){
@@ -113,13 +114,13 @@
       rnd = this.game.rnd;
       this.blockTimer -= delta;
       if (this.blockTimer <= 0) {
-        possibleBlocks = [BasicBlock, BulletBlock];
+        possibleBlocks = [BasicBlock, BulletBlock, TntBlock];
         blockIndex = rnd.integerInRange(0, possibleBlocks.length - 1);
-        nextBlockX = rnd.integerInRange(1, 800 / 64 - 1);
+        nextBlockX = rnd.integerInRange(1, 800 / 64 - 2);
         this.addBlock(possibleBlocks[blockIndex], nextBlockX * 64, 0);
         this.blockTimer = this.blockInterval;
         if (!(this.blockInterval <= 0.7)) {
-          this.blockInterval *= 0.9;
+          this.blockInterval *= 0.85;
         }
       }
     };

@@ -98,6 +98,11 @@ class @Player extends Phaser.Sprite
     else
       @air-timer += delta
 
+    if @body.touching.down
+      @body.gravity.y = 100
+    else
+      @body.gravity.y = 2000
+
     # =============== DODGE ROLL ===============
     @double-click-timer.left  -= delta
     @double-click-timer.right -= delta
