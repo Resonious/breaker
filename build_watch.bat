@@ -1,1 +1,0 @@
-lsc -wco server/game/src src
