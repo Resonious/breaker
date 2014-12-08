@@ -5,6 +5,7 @@
   this.GameCore = GameCore = (function(){
     GameCore.displayName = 'GameCore';
     var prototype = GameCore.prototype, constructor = GameCore;
+    GameCore.doneTutorial = false;
     function GameCore(game){
       this.game = game;
     }
@@ -39,45 +40,55 @@
       x$.audio('steel-break', asset('sounds/steel-break.wav'));
       x$.audio('bh-sound', asset('sounds/block-hole-sound.ogg'));
       x$.audio('bgm', asset('bgm.ogg'));
+      x$.audio('tut-bgm', asset('tutorial.ogg'));
       x$.spritesheet('basic-block', asset('blocks/basic.png'), 64, 64);
       x$.spritesheet('bullet-block', asset('blocks/bullet.png'), 64, 64);
       x$.spritesheet('tnt-block', asset('blocks/tnt.png'), 64, 64);
       x$.spritesheet('chest-block', asset('blocks/chest.png'), 64, 64);
       x$.spritesheet('steel-block', asset('blocks/steel.png'), 64, 64);
+      x$.spritesheet('noob-z-block', asset('blocks/noob-z.png'), 64, 64);
+      x$.spritesheet('noob-d-block', asset('blocks/noob-d.png'), 64, 64);
     };
     prototype.create = function(){
       (function(add, physics, world, camera){
-        var x$, y$, z$, map, z1$, z2$, z3$, this$ = this;
+        var x$, y$, map, z$, z1$, e;
         this.deathSound = add.audio('dead-sound');
         this.blockHoleSound = add.audio('bh-sound');
-        x$ = this.bgm = add.audio('bgm');
-        x$.play('', 0, 1, true);
+        this.bgm = add.audio('bgm');
+        this.tut = add.audio('tut-bgm');
+        if (constructor.doneTutorial) {
+          this.bgm.play('', 0, 1, true);
+        } else {
+          this.tut.play('', 0, 1, true);
+        }
         this.game.stage.backgroundColor = '#1B03E38';
-        y$ = add.emitter(this.game.world.centerX, 200, 200);
-        y$.width = 800;
-        y$.makeParticles('stars', [0, 1, 2, 3, 4, 5, 6]);
-        y$.minParticleSpeed.set(0, 0);
-        y$.maxParticleSpeed.set(0, 400);
-        y$.y = 0;
-        y$.start(false, 3000, 80);
+        x$ = this.stars = add.emitter(this.game.world.centerX, 200, 200);
+        x$.width = 800;
+        x$.makeParticles('stars', [0, 1, 2, 3, 4, 5, 6]);
+        x$.minParticleSpeed.set(0, 0);
+        x$.maxParticleSpeed.set(0, 400);
+        x$.y = 0;
+        if (constructor.doneTutorial) {
+          this.stars.start(false, 3000, 80);
+        }
         add.image(0, 0, 'bg');
         this.game.time.advancedTiming = true;
         physics.startSystem(Phaser.Physics.Arcade);
         physics.arcade.TILE_BIAS = 32;
         physics.arcade.OVERLAP_BIAS = 16;
-        z$ = map = add.tilemap('map');
-        z$.addTilesetImage('basic', 'basic-tile');
-        z$.setCollision(1);
-        z1$ = this.layer = map.createLayer('Tile Layer 1');
-        z1$.resizeWorld();
+        y$ = map = add.tilemap('map');
+        y$.addTilesetImage('basic', 'basic-tile');
+        y$.setCollision(1);
+        z$ = this.layer = map.createLayer('Tile Layer 1');
+        z$.resizeWorld();
         this.arrowKeys = this.game.input.keyboard.createCursorKeys();
         this.punchKey = this.game.input.keyboard.addKey(Phaser.Keyboard.Z);
         this.specialKey = this.game.input.keyboard.addKey(Phaser.Keyboard.X);
-        z2$ = this.player = add.existing(new Player(this.game, this, 400, 500));
-        z2$.keys = this.arrowKeys;
-        z2$.punchKey = this.punchKey;
-        z2$.specialKey = this.specialKey;
-        z2$.initializeSmoke();
+        z1$ = this.player = add.existing(new Player(this.game, this, 400, 500));
+        z1$.keys = this.arrowKeys;
+        z1$.punchKey = this.punchKey;
+        z1$.specialKey = this.specialKey;
+        z1$.initializeSmoke();
         this.spawnedBlockHole = false;
         this.blockHoleTimer = 0.0;
         this.blockHoleScore = 50;
@@ -86,20 +97,40 @@
         this.blockInterval = 2;
         this.blockTimer = this.blockInterval;
         this.chestBlockIn = 5;
-        this.scoreText = add.text(40, 5, 'Score: 0', {
+        try {
+          if (this.highScore && localStorage) {
+            localStorage.ldBreakerHighScore = this.highScore;
+          }
+          if (localStorage) {
+            this.highScore = localStorage.ldBreakerHighScore || 0;
+          }
+        } catch (e$) {
+          e = e$;
+        }
+        this.scoreText = add.text(40, 5, this.scoreStr(), {
           font: '24px Arial',
           fill: '#000000',
-          align: 'center'
+          align: 'left'
         });
-        z3$ = this.game.input.keyboard.addKey(Phaser.Keyboard.D);
-        z3$.onDown.add(function(){
-          this$.addPowerUp(PowerUp, 400, 450);
-          return this$.spawnBlockHole();
-        });
+        if (!constructor.doneTutorial) {
+          this.startTutorial();
+        }
       }.call(this, this.game.add, this.game.physics, this.game.world, this.game.camera));
     };
+    prototype.scoreStr = function(){
+      var str;
+      str = "Score: " + this.player.score;
+      if (this.highScore) {
+        return "High Score: " + this.highScore + "\n" + str;
+      } else {
+        return str;
+      }
+    };
     prototype.score = function(){
-      this.scoreText.text = "Score: " + this.player.score;
+      if (this.player.score > this.highScore) {
+        this.highScore = this.player.score;
+      }
+      this.scoreText.text = this.scoreStr();
       if (this.player.score >= this.blockHoleScore && !this.spawnedBlockHole) {
         return this.spawnBlockHole();
       }
@@ -111,7 +142,7 @@
       x$ = this.blockHole = this.game.add.sprite(400, 200, 'block-hole');
       x$.anchor.setTo(0.5, 0.5);
       x$.x = 100;
-      x$.y = 350;
+      x$.y = 400;
       x$.update = function(){
         return this.rotation += 6 * this.game.time.physicsElapsed;
       };
@@ -167,6 +198,9 @@
       });
       delta = this.game.time.physicsElapsed;
       this.blockTimer -= delta;
+      if (!constructor.doneTutorial) {
+        return;
+      }
       if (this.blockTimer <= 0) {
         this.chestBlockIn -= 1;
         chest = null;
@@ -191,7 +225,7 @@
           xDist = this$.blockHole.x - block.x;
           dist = Math.sqrt(Math.pow(xDist, 2) + Math.pow(yDist, 2));
           angle = Math.atan2(yDist, xDist);
-          angle += 1;
+          angle -= 1;
           block.body.velocity.y = dist * 2 * Math.sin(angle);
           return block.body.velocity.x = dist * 2 * Math.cos(angle);
         });
@@ -201,6 +235,49 @@
         this.spawnedBlockHole = false;
         this.blockHoleScore = this.player.score + 60;
       }
+    };
+    prototype.completeTutorial = function(){
+      this.tut.stop();
+      this.bgm.play('', 0, 1, true);
+      constructor.doneTutorial = true;
+      return this.stars.start(false, 3000, 80);
+    };
+    prototype.startTutorial = function(){
+      var x$, this$ = this;
+      x$ = this.tutZBlock = this.addBlock(TutorialZBlock, 64 * 1, 0);
+      x$.afterDie = function(){
+        return this$.game.time.events.add(1000, this$.tutSpawnDodgeBlock, this$);
+      };
+      return x$;
+    };
+    prototype.tutSpawnDodgeBlock = function(){
+      var decBlockCount, x$, this$ = this;
+      this.blockCount = 7;
+      decBlockCount = function(){
+        var x$;
+        this$.blockCount -= 1;
+        if (this$.blockCount <= 0) {
+          x$ = this$.game.add.tween(this$.tut);
+          x$.to({
+            volume: 0
+          }, 500, Phaser.Easing.Linear.None, true, 0, 0, false);
+          x$.onComplete.add(this$.completeTutorial, this$);
+          x$.start();
+          return x$;
+        }
+      };
+      x$ = this.tutDBlock = this.addBlock(TutorialDBlock, 64 * 1, 0);
+      x$.afterDie = decBlockCount;
+      return this.game.time.events.add(2000, function(){
+        var i$, i, x$, results$ = [];
+        for (i$ = 2; i$ <= 7; ++i$) {
+          i = i$;
+          x$ = this$.addBlock(TutorialZBlock, 64 * i, 0);
+          x$.afterDie = decBlockCount;
+          results$.push(x$);
+        }
+        return results$;
+      });
     };
     prototype.generateBlock = function(rnd, useThisOne){
       var possibleBlocks, blockIndex, nextBlockX, block, chance;

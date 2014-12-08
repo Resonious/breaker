@@ -219,7 +219,16 @@ class @Player extends Phaser.Sprite
       block.punched(@fist) if left or right
       block.hurt-by-roll-timer = 0.1
     else if @body.touching.up && @grounded! && block.body.velocity.y > 100
-      block.body.velocity.y = -5 unless @die!
+      if @should-be-killed-by block
+        block.body.velocity.y = -5 unless @die!
+      else
+        const dist = block.x - @x
+        @body.velocity.x -= dist * 10
+
+  should-be-killed-by: (block) ->
+    range-min = block.x - block.width / 2
+    range-max = block.x + block.width / 2
+    @x > range-min and @x < range-max
 
   die: (force) ->
     return false if @dying or (!force and @invincible)
@@ -232,6 +241,7 @@ class @Player extends Phaser.Sprite
     @body.gravity.y = 500
     @dying = true
     @core.bgm.stop!
+    @core.tut.stop!
     @core.death-sound.play '' 0 2 false
     @animations.stop!
 

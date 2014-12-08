@@ -1,6 +1,8 @@
 {each, all, map} = require 'prelude-ls'
 
 class @GameCore
+  @done-tutorial = false
+
   (game) !->
     @game = game
 
@@ -32,13 +34,16 @@ class @GameCore
       ..audio       'steel-break' asset 'sounds/steel-break.wav'
       ..audio       'bh-sound'    asset 'sounds/block-hole-sound.ogg'
 
-      ..audio 'bgm' asset 'bgm.ogg'
+      ..audio 'bgm'     asset 'bgm.ogg'
+      ..audio 'tut-bgm' asset 'tutorial.ogg'
 
       ..spritesheet 'basic-block'  (asset 'blocks/basic.png') , 64 64
       ..spritesheet 'bullet-block' (asset 'blocks/bullet.png'), 64 64
       ..spritesheet 'tnt-block'    (asset 'blocks/tnt.png')   , 64 64
       ..spritesheet 'chest-block'  (asset 'blocks/chest.png') , 64 64
       ..spritesheet 'steel-block'  (asset 'blocks/steel.png') , 64 64
+      ..spritesheet 'noob-z-block' (asset 'blocks/noob-z.png'), 64 64
+      ..spritesheet 'noob-d-block' (asset 'blocks/noob-d.png'), 64 64
 
   create: !->
     let (add     = @game.add,
@@ -49,18 +54,25 @@ class @GameCore
       @death-sound = add.audio 'dead-sound'
       @block-hole-sound = add.audio 'bh-sound'
       @bgm = add.audio 'bgm'
-        ..play '' 0 1 true
+      @tut = add.audio 'tut-bgm'
+      if @@done-tutorial
+        @bgm.play '' 0 1 true
+      else
+        @tut.play '' 0 1 true
 
       @game.stage.background-color = '#1B03E38'
-      add.emitter @game.world.center-x, 200, 200
+      @stars = add.emitter @game.world.center-x, 200, 200
         ..width = 800
         ..make-particles 'stars', [0, 1, 2, 3, 4, 5, 6]
         ..min-particle-speed.set 0 0
         ..max-particle-speed.set 0 400
         ..y = 0
-        ..start false 3000 80
+
+      if @@done-tutorial
+        @stars.start false 3000 80
+
       add.image 0 0 'bg'
-      @game.time.advancedTiming    = true
+      @game.time.advancedTiming = true
 
       physics.start-system Phaser.Physics.Arcade
       physics.arcade.TILE_BIAS    = 32
@@ -72,8 +84,8 @@ class @GameCore
       @layer = map.create-layer 'Tile Layer 1'
          ..resize-world!
 
-      @arrow-keys = @game.input.keyboard.create-cursor-keys!
-      @punch-key = @game.input.keyboard.add-key Phaser.Keyboard.Z
+      @arrow-keys  = @game.input.keyboard.create-cursor-keys!
+      @punch-key   = @game.input.keyboard.add-key Phaser.Keyboard.Z
       @special-key = @game.input.keyboard.add-key Phaser.Keyboard.X
 
       @player = add.existing new Player(@game, this, 400, 500)
@@ -91,19 +103,34 @@ class @GameCore
       @block-timer    = @block-interval
       @chest-block-in = 5
 
-      @score-text = add.text 40 5 'Score: 0',
+      try
+        if @high-score and local-storage
+          local-storage.ld-breaker-high-score = @high-score
+        @high-score = local-storage.ld-breaker-high-score or 0 if local-storage
+      catch
+
+      @score-text = add.text 40 5 @score-str!,
         font: '24px Arial'
         fill: '#000000'
-        align: 'center'
+        align: 'left'
 
+      @start-tutorial! unless @@done-tutorial
       # DEBUG KEY BEHAVIOR
-      @game.input.keyboard.add-key Phaser.Keyboard.D
-        ..on-down.add ~>
-          @add-power-up PowerUp, 400, 450
-          @spawn-block-hole!
+      # @game.input.keyboard.add-key Phaser.Keyboard.D
+      #   ..on-down.add ~>
+      #     @add-power-up PowerUp, 400, 450
+      #     @spawn-block-hole!
+
+  score-str: ->
+    const str = "Score: #{@player.score}"
+    if @high-score
+      "High Score: #{@high-score}\n#str"
+    else
+      str
 
   score: ->
-    @score-text.text = "Score: #{@player.score}"
+    @high-score = @player.score if @player.score > @high-score
+    @score-text.text = @score-str!
     if @player.score >= @block-hole-score and not @spawned-block-hole
       @spawn-block-hole!
 
@@ -113,7 +140,7 @@ class @GameCore
     @block-hole = @game.add.sprite 400, 200, 'block-hole'
       ..anchor.set-to 0.5 0.5
       ..x = 100
-      ..y = 350
+      ..y = 400
       ..update = -> @rotation += 6 * @game.time.physics-elapsed
     @spawned-block-hole = true
 
@@ -154,6 +181,7 @@ class @GameCore
     const delta = @game.time.physics-elapsed
     @block-timer -= delta
 
+    return unless @@done-tutorial
     if @block-timer <= 0
       @chest-block-in -= 1
       chest = null
@@ -176,7 +204,7 @@ class @GameCore
         const x-dist = @block-hole.x - block.x
         const dist = Math.sqrt(x-dist^2 + y-dist^2)
         angle = Math.atan2 y-dist, x-dist
-        angle += 1
+        angle -= 1
 
         block.body.velocity.y = dist * 2 * Math.sin(angle)
         block.body.velocity.x = dist * 2 * Math.cos(angle)
@@ -188,6 +216,34 @@ class @GameCore
       @spawned-block-hole = false
       @block-hole-score = @player.score + 60
 
+  complete-tutorial: ->
+    @tut.stop!
+    @bgm.play '' 0 1 true
+    @@done-tutorial = true
+    @stars.start false 3000 80
+
+  start-tutorial: ->
+    @tut-z-block = @add-block TutorialZBlock, 64 * 1, 0
+      ..after-die = ~>
+        @game.time.events.add 1000, @tut-spawn-dodge-block, this
+
+  tut-spawn-dodge-block: ->
+    @block-count = 7
+    dec-block-count = ~>
+      @block-count -= 1
+      if @block-count <= 0
+        @game.add.tween(@tut)
+          ..to { volume: 0 }, 500, Phaser.Easing.Linear.None, true, 0, 0, false
+          ..on-complete.add @complete-tutorial, this
+          ..start!
+
+    @tut-d-block = @add-block TutorialDBlock, 64 * 1, 0
+      ..after-die = dec-block-count
+
+    @game.time.events.add 2000, ~>
+      for i from 2 to 7
+        @add-block TutorialZBlock, 64 * i, 0
+          ..after-die = dec-block-count
 
   generate-block: (rnd, use-this-one) ->
     const possible-blocks = [BasicBlock, BulletBlock, TntBlock, SteelBlock]

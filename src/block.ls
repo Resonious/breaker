@@ -1,6 +1,6 @@
 class @Block extends Phaser.Sprite
   is-block: true
-  gravity: 500
+  gravity: 600
 
   (spritesheet, game, core, x, y) ~>
     super game, x, y, spritesheet

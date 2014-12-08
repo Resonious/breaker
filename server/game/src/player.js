@@ -224,7 +224,7 @@
       return this.spinningTimer > 0;
     };
     prototype.onCollide = function(block){
-      var left, right;
+      var left, right, dist;
       if (this.spinning()) {
         if (block.alreadyHurtByRoll && block.alreadyHurtByRoll()) {
           return;
@@ -236,10 +236,21 @@
         }
         return block.hurtByRollTimer = 0.1;
       } else if (this.body.touching.up && this.grounded() && block.body.velocity.y > 100) {
-        if (!this.die()) {
-          return block.body.velocity.y = -5;
+        if (this.shouldBeKilledBy(block)) {
+          if (!this.die()) {
+            return block.body.velocity.y = -5;
+          }
+        } else {
+          dist = block.x - this.x;
+          return this.body.velocity.x -= dist * 10;
         }
       }
+    };
+    prototype.shouldBeKilledBy = function(block){
+      var rangeMin, rangeMax;
+      rangeMin = block.x - block.width / 2;
+      rangeMax = block.x + block.width / 2;
+      return this.x > rangeMin && this.x < rangeMax;
     };
     prototype.die = function(force){
       if (this.dying || (!force && this.invincible)) {
@@ -257,6 +268,7 @@
       this.body.gravity.y = 500;
       this.dying = true;
       this.core.bgm.stop();
+      this.core.tut.stop();
       this.core.deathSound.play('', 0, 2, false);
       this.animations.stop();
       this.game.time.events.add(5000, function(){
